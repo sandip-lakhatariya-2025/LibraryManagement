@@ -4,54 +4,85 @@ using LibraryManagement.DataAccess.IRepository;
 using LibraryManagement.DataAccess.Repository;
 using LibraryManagement.Services;
 using LibraryManagement.Services.IServices;
-using LibraryManagement.Web;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Serilog;
+using Serilog.Events;
 
-var builder = WebApplication.CreateBuilder(args);
+var exeFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+var logFilePath = Path.Combine(exeFolder ?? ".", "Logs", $"API_Logs_{DateTime.Now.ToString("MM_dd_yyyy")}.log");
 
-var conn = builder.Configuration.GetConnectionString("DatabaseAddress");
-builder.Services.AddDbContext<ApplicationDbContext>(q => {
-    q.UseNpgsql(conn, b => b.MigrationsAssembly("LibraryManagement.Web"));
-    q.LogTo(Console.WriteLine, LogLevel.Information);  // <-- Enable SQL logging here
-    q.EnableSensitiveDataLogging();                    // <-- Optional: show parameter values
-});
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+    .MinimumLevel.Override("Microsoft.AspNetCore.Hosting.Diagnostics", LogEventLevel.Error)
+    .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)
+    .MinimumLevel.Information()
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.File(
+        logFilePath,
+        rollingInterval: RollingInterval.Infinite,
+        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level}] {Message}{NewLine}{Exception}"
+    )
+    .CreateLogger();
 
-builder.Services.AddScoped<IBookRepository, BookRepository>();
-builder.Services.AddScoped<IBookService, BookService>();
-
-builder.Services.AddControllers(options => {
-    options.Filters.Add<ApiLoggingFilterAttribute>();
-});
-
-builder.Services.AddEndpointsApiExplorer();
-
-builder.Services.AddSwaggerGen(options => 
+try
 {
-    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-    options.IncludeXmlComments(xmlPath);
+    Log.Information("starting server.");
+    var builder = WebApplication.CreateBuilder(args);
 
-    options.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Title = "Library Management",
-        Version = "v1"
+    var conn = builder.Configuration.GetConnectionString("DatabaseAddress");
+    builder.Services.AddDbContext<ApplicationDbContext>(q => {
+        q.UseNpgsql(conn, b => b.MigrationsAssembly("LibraryManagement.Web"));
     });
 
-    options.OperationFilter<ApiKeyFilter>();
-});
+    builder.Host.UseSerilog();
 
-var app = builder.Build();
+    builder.Services.AddScoped<IBookRepository, BookRepository>();
+    builder.Services.AddScoped<IBookService, BookService>();
+    builder.Services.AddHttpContextAccessor();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    builder.Services.AddControllers();
+
+    builder.Services.AddEndpointsApiExplorer();
+
+    builder.Services.AddSwaggerGen(options => 
+    {
+        var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+        var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+        options.IncludeXmlComments(xmlPath);
+
+        options.SwaggerDoc("v1", new OpenApiInfo
+        {
+            Title = "Library Management",
+            Version = "v1"
+        });
+
+        options.OperationFilter<ApiKeyFilter>();
+    });
+
+    var app = builder.Build();
+
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseSwagger();
+        app.UseSwaggerUI();
+    }
+
+    app.UseHttpsRedirection();
+
+    app.UseMiddleware<ApiKeyMiddleware>();
+    app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
+    app.UseMiddleware<ApiLoggingMiddleware>();
+
+    app.MapControllers();
+    app.Run();
 }
-
-app.UseHttpsRedirection();
-
-app.UseMiddleware<ApiKeyMiddleware>();
-
-app.MapControllers();
-app.Run();
+catch (Exception ex)
+{
+    Log.Fatal(ex, "server terminated unexpectedly");
+}
+finally
+{
+    Log.CloseAndFlush();
+}

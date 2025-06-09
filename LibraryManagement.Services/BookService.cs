@@ -7,14 +7,19 @@ using LibraryManagement.Models.ViewModels;
 using LibraryManagement.Services.IServices;
 using LibraryManagement.Utility;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace LibraryManagement.Services;
 
 public class BookService : IBookService
 {
+    private readonly ILogger<BookService> _logger;
+    private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IBookRepository _bookRepository;
 
-    public BookService(IBookRepository bookRepository) {
+    public BookService(ILogger<BookService> logger, IHttpContextAccessor httpContextAccessor, IBookRepository bookRepository) {
+        _logger = logger;
+        _httpContextAccessor = httpContextAccessor;
         _bookRepository = bookRepository;
     }
 
@@ -44,16 +49,12 @@ public class BookService : IBookService
 
     public async Task<PagedResponse<List<ExpandoObject>>> GetPaginatedListOfBooks(PaginationFilter paginationFilter, IQueryCollection queryParams, string? fields)
     {
-        try
-        {
+        // try
+        // {
             var (books, totalRecords) = await _bookRepository.GetPaginatedListAsync(paginationFilter, queryParams);
             int totalPages = (int)Math.Ceiling((double)totalRecords / paginationFilter.PageSize);
 
-            // var shapedBooks = DataShaper.ShapeData(books, fields);
-
             var shapedBooks = books.Select(book => ObjectShaper.GetShapedObject(book, fields)).ToList();
-            
-            // throw new Exception();
 
             return CommonHelper.CreatePagedResponse(
                 data: shapedBooks,
@@ -65,23 +66,25 @@ public class BookService : IBookService
                 bIsSuccess: true,
                 sMessage: "Books retrieved successfully"
             );
-        }
-        catch (Exception ex)
-        {
-            return CommonHelper.CreatePagedResponse(
-                data: new List<ExpandoObject>(),
-                nPageNumber: 0,
-                nPageSize:0,
-                ntotalRecords: 0,
-                ntotalPages: 0,
-                statusCode: HttpStatusCode.InternalServerError,
-                bIsSuccess: false,
-                sMessage: "An error occurred while retrieving books.",
-                arrErrorMessages: new string[] { ex.Message }
-            );
-        }
-    }
+        // }
+        // catch (Exception ex)
+        // {
+        //      var route = _httpContextAccessor.HttpContext?.Request?.Path.Value ?? "Unknown";
+        //     _logger.LogError("Exception in BookService at {Route}: {Message}", route, ex.Message);
 
+        //     return CommonHelper.CreatePagedResponse(
+        //         data: new List<ExpandoObject>(),
+        //         nPageNumber: 0,
+        //         nPageSize:0,
+        //         ntotalRecords: 0,
+        //         ntotalPages: 0,
+        //         statusCode: HttpStatusCode.InternalServerError,
+        //         bIsSuccess: false,
+        //         sMessage: "An error occurred while retrieving books.",
+        //         arrErrorMessages: new string[] { ex.Message }
+        //     );
+        // }
+    }
 
     public async Task<BooksViewModel?> GetBookById(long id)
     {

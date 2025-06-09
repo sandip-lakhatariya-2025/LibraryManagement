@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace LibraryManagement.Web.Controller;
 
 [ApiController]
-[Route("[Controller]")]
+[Route("api/[Controller]")]
 public class BookController : ControllerBase
 {
 

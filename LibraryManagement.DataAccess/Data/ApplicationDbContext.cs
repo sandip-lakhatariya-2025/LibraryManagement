@@ -13,6 +13,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Publisher> Publishers { get; set; }
     public DbSet<Customer> Customers { get; set; }
     public DbSet<CustomerBook> CustomerBooks { get; set; }
+    public DbSet<APIStackTrace> APIStackTraces { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
