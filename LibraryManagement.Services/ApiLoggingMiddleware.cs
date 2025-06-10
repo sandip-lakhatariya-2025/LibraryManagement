@@ -21,17 +21,17 @@ public class ApiLoggingMiddleware
     public async Task InvokeAsync(HttpContext context, ApplicationDbContext db)
     {
         var sw = Stopwatch.StartNew();
-        var method = context.Request.Method;
-        var controller = context.GetRouteValue("controller")?.ToString() ?? "Unknown";
-        var action = context.GetRouteValue("action")?.ToString() ?? "Unknown";
+        string sMethodName = context.Request.Method;
+        string sControllerName = context.GetRouteValue("controller")?.ToString() ?? "Unknown";
+        string sActionName = context.GetRouteValue("action")?.ToString() ?? "Unknown";
         var path = context.Request.Path;
-        var route = $"{controller}/{action}";
+        string sRoute = $"{sControllerName}/{sActionName}";
 
         var logEntry = new APIStackTrace
         {
             EndpointName = path,
-            RequestRoute = route,
-            ApiType = method,
+            RequestRoute = sRoute,
+            ApiType = sMethodName,
             IsSuccess = false,
             CreatedAt = DateTime.UtcNow
         };
@@ -41,20 +41,20 @@ public class ApiLoggingMiddleware
 
         try
         {
-            _logger.LogInformation("API Call Started => Route: {Controller}/{Action}", controller, action);
+            _logger.LogInformation("API Call Started => Route: {Controller}/{Action}", sControllerName, sActionName);
             
             await _next(context);
             logEntry.IsSuccess = context.Response.StatusCode < 400;
 
             _logger.LogInformation("API Call Successful => Route: {Controller}/{Action} - Status Code: {StatusCode}",
-                controller, action, context.Response.StatusCode);
+                sControllerName, sActionName, context.Response.StatusCode);
         }
         catch (Exception ex)
         {
             logEntry.IsSuccess = false;
             logEntry.ErrorLog = ex.Message.ToString();
 
-            _logger.LogError("API Call Failed => Route: {Controller}/{Action} - Status Code: 500 - Exception: {Message}", controller, action, ex.Message);
+            _logger.LogError("API Call Failed => Route: {Controller}/{Action} - Status Code: 500 - Exception: {Message}", sControllerName, sActionName, ex.Message);
             throw;
         }
         finally

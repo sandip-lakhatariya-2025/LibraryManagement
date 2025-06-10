@@ -46,7 +46,7 @@ public class BookRepository : IBookRepository
             );
         }
 
-        int totalRecords = await baseQuery.CountAsync();
+        int nTotalRecords = await baseQuery.CountAsync();
 
         Expression<Func<Book, Object>> keySelector = paginationFilter.SortField!.ToLower() switch
         {
@@ -68,7 +68,7 @@ public class BookRepository : IBookRepository
 
         int skipCount = (paginationFilter.PageNumber - 1) * paginationFilter.PageSize;
 
-        List<BooksViewModel> books = await baseQuery
+        List<BooksViewModel> lstBooks = await baseQuery
             .Select(b => new BooksViewModel
             {
                 Id = b.Id,
@@ -97,7 +97,7 @@ public class BookRepository : IBookRepository
             .Take(paginationFilter.PageSize)
             .ToListAsync();
 
-        return (books, totalRecords);
+        return (lstBooks, nTotalRecords);
     }
 
 
@@ -119,10 +119,10 @@ public class BookRepository : IBookRepository
         return await _context.Books.Where(b => b.Id == id).FirstOrDefaultAsync();
     }
 
-    public async Task<List<BooksViewModel>> GetBooksDtoByIds(List<long> ids)
+    public async Task<List<BooksViewModel>> GetBooksDtoByIds(List<long> lstIds)
     {
         return await _context.Books
-            .Where(b => ids.Contains(b.Id))
+            .Where(b => lstIds.Contains(b.Id))
             .Select(b => new BooksViewModel
             {
                 Id = b.Id,
@@ -135,39 +135,39 @@ public class BookRepository : IBookRepository
             .ToListAsync();
     }
 
-    public async Task<bool> InsertAsync(Book book)
+    public async Task<bool> InsertAsync(Book objBook)
     {
-        await _context.Books.AddAsync(book);
+        await _context.Books.AddAsync(objBook);
         return await _context.SaveChangesAsync() > 0;
     }
 
-    public async Task<bool> InsertRangeAsync(List<Book> books)
+    public async Task<bool> InsertRangeAsync(List<Book> lstBooks)
     {
-        await _context.Books.AddRangeAsync(books);
+        await _context.Books.AddRangeAsync(lstBooks);
         return await _context.SaveChangesAsync() > 0;
     }
 
-    public async Task<bool> UpdateAsync(Book book)
+    public async Task<bool> UpdateAsync(Book objBook)
     {
-        _context.Books.Update(book);
+        _context.Books.Update(objBook);
         return await _context.SaveChangesAsync() > 0;
     }
 
-    public async Task<bool> UpdateRangeAsync(List<Book> books)
+    public async Task<bool> UpdateRangeAsync(List<Book> lstBooks)
     {
-        _context.Books.UpdateRange(books);
+        _context.Books.UpdateRange(lstBooks);
         return await _context.SaveChangesAsync() > 0;
     }
 
-    public async Task<bool> DeleteAsync(Book book)
+    public async Task<bool> DeleteAsync(Book objBook)
     {
-        _context.Books.Remove(book);
+        _context.Books.Remove(objBook);
         return await _context.SaveChangesAsync() > 0;
     }
 
-    public async Task<bool> DeleteRangeAsync(List<Book> books)
+    public async Task<bool> DeleteRangeAsync(List<Book> lstBooks)
     {
-        _context.Books.RemoveRange(books);
+        _context.Books.RemoveRange(lstBooks);
         return await _context.SaveChangesAsync() > 0;
     }
 }

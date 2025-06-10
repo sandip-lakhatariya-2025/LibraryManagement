@@ -15,21 +15,21 @@ public class CustomerService : ICustomerService
     {
         _customerRepository = customerRepository;
     }
-    public async Task<Response<CustomerViewModel?>> AddCustomer(CustomerViewModel customerViewModel)
+    public async Task<Response<CustomerViewModel?>> AddCustomer(CustomerViewModel objCustomerViewModel)
     {
 
-        Customer newCustomer = new Customer
+        Customer objNewCustomer = new Customer
         {
-            Name = customerViewModel.Name,
-            Email = customerViewModel.Email
+            Name = objCustomerViewModel.Name,
+            Email = objCustomerViewModel.Email
         };
 
-        bool isSuccess = await _customerRepository.InsertAsync(newCustomer);
-        
+        bool isSuccess = await _customerRepository.InsertAsync(objNewCustomer);
+
         if (isSuccess)
         {
-            CustomerViewModel? addedCustomer = await GetCustomerById(newCustomer.Id);
-            return CommonHelper.CreateResponse(addedCustomer, HttpStatusCode.OK, true, "Customer added successfully.");
+            CustomerViewModel? objAddedCustomer = await GetCustomerById(objNewCustomer.Id);
+            return CommonHelper.CreateResponse(objAddedCustomer, HttpStatusCode.OK, true, "Customer added successfully.");
         }
 
         return CommonHelper.CreateResponse<CustomerViewModel?>(null, HttpStatusCode.BadRequest, false, $"Failed to add Customer.");

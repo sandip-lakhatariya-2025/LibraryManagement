@@ -19,19 +19,19 @@ public class BookService : IBookService
         _bookRepository = bookRepository;
     }
 
-    public async Task<PagedResponse<List<ExpandoObject>>> GetPaginatedListOfBooks(PaginationFilter paginationFilter, IQueryCollection queryParams, string? fields)
+    public async Task<PagedResponse<List<ExpandoObject>>> GetPaginatedListOfBooks(PaginationFilter paginationFilter, IQueryCollection queryParams, string? sFields)
     {
-        var (books, totalRecords) = await _bookRepository.GetPaginatedListAsync(paginationFilter, queryParams);
-        int totalPages = (int)Math.Ceiling((double)totalRecords / paginationFilter.PageSize);
+        var (lstBooks, nTotalRecords) = await _bookRepository.GetPaginatedListAsync(paginationFilter, queryParams);
+        int nTotalPages = (int)Math.Ceiling((double)nTotalRecords / paginationFilter.PageSize);
 
-        var shapedBooks = books.Select(book => ObjectShaper.GetShapedObject(book, fields)).ToList();
+        var shapedBooks = lstBooks.Select(book => ObjectShaper.GetShapedObject(book, sFields)).ToList();
 
         return CommonHelper.CreatePagedResponse(
             data: shapedBooks,
             nPageNumber: paginationFilter.PageNumber,
             nPageSize: paginationFilter.PageSize,
-            ntotalRecords: totalRecords,
-            ntotalPages: totalPages,
+            ntotalRecords: nTotalRecords,
+            ntotalPages: nTotalPages,
             statusCode: HttpStatusCode.OK,
             bIsSuccess: true,
             sMessage: "Books retrieved successfully"
@@ -43,46 +43,46 @@ public class BookService : IBookService
         return await _bookRepository.GetFirstOrDefaultSelectedAsync(id);
     }
 
-    public async Task<Response<BooksViewModel?>> AddBook(BooksViewModel booksViewModel)
+    public async Task<Response<BooksViewModel?>> AddBook(BooksViewModel objBookViewModel)
     {
-        Book newBook = new Book
+        Book objNewBook = new Book
         {
-            BookName = booksViewModel.BookName,
-            AutherName = booksViewModel.AutherName,
-            Description = booksViewModel.Description,
-            Price = booksViewModel.Price,
-            TotalCopies = booksViewModel.TotalCopies,
-            PublisherId = booksViewModel.PublisherId
+            BookName = objBookViewModel.BookName,
+            AutherName = objBookViewModel.AutherName,
+            Description = objBookViewModel.Description,
+            Price = objBookViewModel.Price,
+            TotalCopies = objBookViewModel.TotalCopies,
+            PublisherId = objBookViewModel.PublisherId
         };
 
-        bool isSuccess = await _bookRepository.InsertAsync(newBook);
+        bool bIsSuccess = await _bookRepository.InsertAsync(objNewBook);
 
-        if (isSuccess)
+        if (bIsSuccess)
         {
-            BooksViewModel? addedBook = await GetBookById(newBook.Id);
+            BooksViewModel? addedBook = await GetBookById(objNewBook.Id);
             return CommonHelper.CreateResponse(addedBook, HttpStatusCode.OK, true, "Book added successfully.");
         }
 
         return CommonHelper.CreateResponse<BooksViewModel?>(null, HttpStatusCode.BadRequest, false, $"Failed to add book.");
     }
 
-    public async Task<Response<BooksViewModel?>> UpdateBook(BooksViewModel booksViewModel)
+    public async Task<Response<BooksViewModel?>> UpdateBook(BooksViewModel objBookViewModel)
     {
-        Book? existingBook = await _bookRepository.GetFirstOrDefaultAsync(booksViewModel.Id);
+        Book? objExistingBook = await _bookRepository.GetFirstOrDefaultAsync(objBookViewModel.Id);
 
-        if (existingBook != null)
+        if (objExistingBook != null)
         {
-            existingBook.BookName = booksViewModel.BookName;
-            existingBook.AutherName = booksViewModel.AutherName;
-            existingBook.Description = booksViewModel.Description;
-            existingBook.Price = booksViewModel.Price;
-            existingBook.TotalCopies = booksViewModel.TotalCopies;
+            objExistingBook.BookName = objBookViewModel.BookName;
+            objExistingBook.AutherName = objBookViewModel.AutherName;
+            objExistingBook.Description = objBookViewModel.Description;
+            objExistingBook.Price = objBookViewModel.Price;
+            objExistingBook.TotalCopies = objBookViewModel.TotalCopies;
 
-            bool isSuccess = await _bookRepository.UpdateAsync(existingBook);
+            bool bIsSuccess = await _bookRepository.UpdateAsync(objExistingBook);
 
-            if (isSuccess)
+            if (bIsSuccess)
             {
-                BooksViewModel? updatedBook = await GetBookById(existingBook.Id);
+                BooksViewModel? updatedBook = await GetBookById(objExistingBook.Id);
                 return CommonHelper.CreateResponse(updatedBook, HttpStatusCode.OK, true, "Book Updated successfully");
             }
         }
@@ -90,23 +90,23 @@ public class BookService : IBookService
         return CommonHelper.CreateResponse<BooksViewModel?>(null, HttpStatusCode.BadRequest, false, "Book not found.");
     }
 
-    public async Task<Response<List<BooksViewModel>>> UpdateListOfBooks(List<BooksViewModel> booksViewModels)
+    public async Task<Response<List<BooksViewModel>>> UpdateListOfBooks(List<BooksViewModel> listBooksViewModels)
     {
-        List<Book> books = new List<Book>();
+        List<Book> listBooks = new List<Book>();
 
-        foreach (var bookViewModel in booksViewModels)
+        foreach (var objBookViewModel in listBooksViewModels)
         {
-            Book? existingBook = await _bookRepository.GetFirstOrDefaultAsync(bookViewModel.Id);
+            Book? objExistingBook = await _bookRepository.GetFirstOrDefaultAsync(objBookViewModel.Id);
 
-            if (existingBook != null)
+            if (objExistingBook != null)
             {
-                existingBook.BookName = bookViewModel.BookName;
-                existingBook.AutherName = bookViewModel.AutherName;
-                existingBook.Description = bookViewModel.Description;
-                existingBook.Price = bookViewModel.Price;
-                existingBook.TotalCopies = bookViewModel.TotalCopies;
+                objExistingBook.BookName = objBookViewModel.BookName;
+                objExistingBook.AutherName = objBookViewModel.AutherName;
+                objExistingBook.Description = objBookViewModel.Description;
+                objExistingBook.Price = objBookViewModel.Price;
+                objExistingBook.TotalCopies = objBookViewModel.TotalCopies;
 
-                books.Add(existingBook);
+                listBooks.Add(objExistingBook);
             }
             else
             {
@@ -114,58 +114,60 @@ public class BookService : IBookService
             }
         }
 
-        bool isSuccess = await _bookRepository.UpdateRangeAsync(books);
+        bool bIsSuccess = await _bookRepository.UpdateRangeAsync(listBooks);
 
-        if (isSuccess)
+        if (bIsSuccess)
         {
-            List<BooksViewModel> updatedBooks = await _bookRepository.GetBooksDtoByIds(booksViewModels.Select(b => b.Id).ToList());
+            List<BooksViewModel> updatedBooks = await _bookRepository.GetBooksDtoByIds(listBooksViewModels.Select(b => b.Id).ToList());
             return CommonHelper.CreateResponse(updatedBooks, HttpStatusCode.OK, true, "All selected Books has been updated successfully");
         }
 
         return CommonHelper.CreateResponse(new List<BooksViewModel>(), HttpStatusCode.BadRequest, false, "Some error occured while updating the books.");
     }
 
-    public async Task<(bool isSuccess, string message)> DeleteBook(long id)
+    public async Task<Response<bool>> DeleteBook(long id)
     {
-        Book? existingBook = await _bookRepository.GetFirstOrDefaultAsync(id);
+        Book? objExistingBook = await _bookRepository.GetFirstOrDefaultAsync(id);
 
-        if (existingBook != null)
+        if (objExistingBook != null)
         {
-            bool isSuccess = await _bookRepository.DeleteAsync(existingBook);
-            if (isSuccess)
+            bool bIsSuccess = await _bookRepository.DeleteAsync(objExistingBook);
+
+            if (bIsSuccess)
             {
-                return (true, "Book Deleted successfully");
+                return CommonHelper.CreateResponse(false, HttpStatusCode.OK, true, "Book Deleted successfully");
             }
         }
 
-        return (false, "Book not found.");
+        return CommonHelper.CreateResponse(false, HttpStatusCode.BadRequest, false, "Book not found.");
     }
 
-    public async Task<(bool isSuccess, string message)> DeleteListOfBooks(List<int> ids)
+    public async Task<Response<bool>> DeleteListOfBooks(List<int> ids)
     {
-        List<Book> books = new List<Book>();
+        List<Book> listBooks = new List<Book>();
 
         foreach (var id in ids)
         {
-            Book? existingBook = await _bookRepository.GetFirstOrDefaultAsync(id);
-            if (existingBook != null)
+            Book? objExistingBook = await _bookRepository.GetFirstOrDefaultAsync(id);
+
+            if (objExistingBook != null)
             {
-                books.Add(existingBook);
+                listBooks.Add(objExistingBook);
             }
             else
             {
-                return (false, "Some books are not found.");
+                return CommonHelper.CreateResponse(false, HttpStatusCode.OK, false, "Some books are not found.");
             }
         }
 
-        bool isSuccess = await _bookRepository.DeleteRangeAsync(books);
-        
-        if (isSuccess)
+        bool bIsSuccess = await _bookRepository.DeleteRangeAsync(listBooks);
+
+        if (bIsSuccess)
         {
-            return (true, "All selected Books has been deleted successfully");
+            return CommonHelper.CreateResponse(false, HttpStatusCode.OK, true, "All selected Books has been deleted successfully");
         }
 
-        return (false, "Some error occured while deleting the books.");
+        return CommonHelper.CreateResponse(false, HttpStatusCode.OK, false, "Some error occured while deleting the books.");
     }
 
 }

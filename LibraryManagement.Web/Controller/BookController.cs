@@ -35,7 +35,7 @@ public class BookController : ControllerBase
         {
             return Ok(response);
         }
-        
+
         return StatusCode((int)response.StatusCode, response);
     }
 
@@ -47,14 +47,14 @@ public class BookController : ControllerBase
     [PermissionAuthorize(ClientEndpoint.Book, Permission.Read)]
     public async Task<ActionResult<BooksViewModel>> GetBook(long id)
     {
-        BooksViewModel? booksViewModel = await _bookService.GetBookById(id);
+        BooksViewModel? objBook = await _bookService.GetBookById(id);
 
-        if (booksViewModel == null)
+        if (objBook == null)
         {
             return NotFound();
         }
 
-        return booksViewModel;
+        return objBook;
     }
 
     /// <summary>
@@ -64,9 +64,9 @@ public class BookController : ControllerBase
     [HttpPost]
     [PermissionAuthorize(ClientEndpoint.Book, Permission.Write)]
     [Idempotent]
-    public async Task<IActionResult> AddBook(BooksViewModel booksViewModel)
+    public async Task<IActionResult> AddBook(BooksViewModel objBookViewModel)
     {
-        var response = await _bookService.AddBook(booksViewModel);
+        var response = await _bookService.AddBook(objBookViewModel);
 
         if (response.Succeeded)
         {
@@ -82,15 +82,15 @@ public class BookController : ControllerBase
 
     [HttpPut("{id}")]
     [PermissionAuthorize(ClientEndpoint.Book, Permission.Update)]
-    public async Task<IActionResult> UpdateBook(long id, BooksViewModel booksViewModel)
+    public async Task<IActionResult> UpdateBook(long id, BooksViewModel objBookViewModel)
     {
 
-        if (id != booksViewModel.Id)
+        if (id != objBookViewModel.Id)
         {
             return BadRequest();
         }
 
-        var response = await _bookService.UpdateBook(booksViewModel);
+        var response = await _bookService.UpdateBook(objBookViewModel);
 
         if (response.Succeeded)
         {
@@ -106,10 +106,10 @@ public class BookController : ControllerBase
 
     [HttpPut]
     [PermissionAuthorize(ClientEndpoint.Book, Permission.MultipleUpdate)]
-    public async Task<IActionResult> UpdateBooks(List<BooksViewModel> booksViewModels)
+    public async Task<IActionResult> UpdateBooks(List<BooksViewModel> listBooksViewModels)
     {
 
-        var response = await _bookService.UpdateListOfBooks(booksViewModels);
+        var response = await _bookService.UpdateListOfBooks(listBooksViewModels);
 
         if (response.Succeeded)
         {
@@ -125,16 +125,16 @@ public class BookController : ControllerBase
 
     [HttpDelete("{id}")]
     [PermissionAuthorize(ClientEndpoint.Book, Permission.Delete)]
-    public async Task<IActionResult> DeleteBook(int id)
+    public async Task<IActionResult> DeleteBook(long id)
     {
-        var result = await _bookService.DeleteBook(id);
+        var response = await _bookService.DeleteBook(id);
 
-        if (result.isSuccess)
+        if (response.Succeeded)
         {
-            return Ok(new { message = result.message });
+            return Ok(response);
         }
 
-        return BadRequest(new { error = result.message });
+        return StatusCode((int)response.StatusCode, response);
     }
 
     /// <summary>
@@ -143,15 +143,15 @@ public class BookController : ControllerBase
 
     [HttpDelete]
     [PermissionAuthorize(ClientEndpoint.Book, Permission.MultipleDelete)]
-    public async Task<IActionResult> DeleteBooks(List<int> ids)
+    public async Task<IActionResult> DeleteBooks(List<int> lstIds)
     {
-        var result = await _bookService.DeleteListOfBooks(ids);
+        var response = await _bookService.DeleteListOfBooks(lstIds);
 
-        if (result.isSuccess)
+        if (response.Succeeded)
         {
-            return Ok(new { message = result.message });
+            return Ok(response);
         }
 
-        return BadRequest(new { error = result.message });
+        return StatusCode((int)response.StatusCode, response);
     }
 }

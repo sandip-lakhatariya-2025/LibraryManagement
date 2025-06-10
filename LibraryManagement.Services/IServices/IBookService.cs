@@ -7,11 +7,11 @@ namespace LibraryManagement.Services.IServices;
 
 public interface IBookService
 {
-    Task<PagedResponse<List<ExpandoObject>>> GetPaginatedListOfBooks(PaginationFilter paginationFilter, IQueryCollection queryParams, string? fields);
+    Task<PagedResponse<List<ExpandoObject>>> GetPaginatedListOfBooks(PaginationFilter paginationFilter, IQueryCollection queryParams, string? sFields);
     Task<BooksViewModel?> GetBookById(long id);
-    Task<Response<BooksViewModel?>> AddBook(BooksViewModel booksViewModel);
-    Task<Response<BooksViewModel?>> UpdateBook(BooksViewModel booksViewModel);
-    Task<Response<List<BooksViewModel>>> UpdateListOfBooks(List<BooksViewModel> booksViewModels);
-    Task<(bool isSuccess, string message)> DeleteBook(long id);
-    Task<(bool isSuccess, string message)> DeleteListOfBooks(List<int> ids);
+    Task<Response<BooksViewModel?>> AddBook(BooksViewModel objBookViewModel);
+    Task<Response<BooksViewModel?>> UpdateBook(BooksViewModel objBookViewModel);
+    Task<Response<List<BooksViewModel>>> UpdateListOfBooks(List<BooksViewModel> lstBooksViewModels);
+    Task<Response<bool>> DeleteBook(long id);
+    Task<Response<bool>> DeleteListOfBooks(List<int> lstIds);
 }
