@@ -41,6 +41,7 @@ try
     builder.Services.AddScoped<IBookRepository, BookRepository>();
     builder.Services.AddScoped<IBookService, BookService>();
     builder.Services.AddHttpContextAccessor();
+    builder.Services.AddDistributedMemoryCache();
 
     builder.Services.AddControllers();
 

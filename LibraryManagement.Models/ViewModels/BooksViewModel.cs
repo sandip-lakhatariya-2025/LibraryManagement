@@ -18,6 +18,8 @@ public class BooksViewModel
 
     public int TotalCopies { get; set; }
 
+    public int PublisherId { get; set; }
+
     public PublisherViewModel? PublisherDetails { get; set; }
 
     public ReaderDetailsViewModel? ReaderDetails { get; set; }

@@ -7,7 +7,7 @@ namespace LibraryManagement.Services.IServices;
 
 public interface IBookService
 {
-    Task<List<BooksViewModel>> GetAllBooks();
+    Task<List<BooksViewModel>> GetCustomerById();
     Task<PagedResponse<List<ExpandoObject>>> GetPaginatedListOfBooks(PaginationFilter paginationFilter, IQueryCollection queryParams, string? fields);
     Task<BooksViewModel?> GetBookById(long id);
     Task<Response<BooksViewModel?>> AddBook(BooksViewModel booksViewModel);

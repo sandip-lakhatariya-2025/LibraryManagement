@@ -19,23 +19,3 @@ public class ApiKeyFilter : IOperationFilter
         });
     }
 }
-
-
-// services.AddDbContext<YourDbContext>(options =>
-// {
-//     options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
-//     options.LogTo(Console.WriteLine, LogLevel.Information);  // <-- Enable SQL logging here
-//     options.EnableSensitiveDataLogging();                    // <-- Optional: show parameter values
-// });
-
-// {
-//   "Logging": {
-//     "LogLevel": {
-//       "Default": "Information",
-//       "Microsoft": "Warning",
-//       "Microsoft.EntityFrameworkCore.Database.Command": "Information"
-//     }
-//   }
-// }
-
-// options.EnableSensitiveDataLogging();

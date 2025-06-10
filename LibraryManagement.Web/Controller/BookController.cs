@@ -1,3 +1,4 @@
+using LibraryManagement.Common;
 using LibraryManagement.Models.Enums;
 using LibraryManagement.Models.ViewModels;
 using LibraryManagement.Services;
@@ -70,7 +71,8 @@ public class BookController : ControllerBase
     
     [HttpPost]
     [PermissionAuthorize(ClientEndpoint.Book, Permission.Write)]
-    public async Task<IActionResult> AddBook(BooksViewModel booksViewModel) {
+    [Idempotent]
+    public async Task<IActionResult> AddBook(BooksViewModel booksViewModel, [FromHeader(Name = "X-Idempotency-Key")] string idempotencyKey) {
         var response  = await _bookService.AddBook(booksViewModel);
         if (response.Succeeded)
         {
