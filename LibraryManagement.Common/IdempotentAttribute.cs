@@ -1,3 +1,4 @@
+using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http;
@@ -21,7 +22,13 @@ public class IdempotentAttribute : Attribute, IAsyncActionFilter
 
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next) 
     {
-        if(!context.HttpContext.Request.Headers.TryGetValue("X-Idempotency-Key", out StringValues idempotencyKeyValue) || 
+        if (!HttpMethods.IsPost(context.HttpContext.Request.Method))
+        {
+            await next();
+            return;
+        }
+
+        if (!context.HttpContext.Request.Headers.TryGetValue("X-Idempotency-Key", out StringValues idempotencyKeyValue) ||
             !Guid.TryParse(idempotencyKeyValue, out Guid idempotencyKey)) 
         {
             context.Result = new BadRequestObjectResult("Invalid or missing X-Idempotency-Key header");
@@ -29,20 +36,30 @@ public class IdempotentAttribute : Attribute, IAsyncActionFilter
         }
 
         IDistributedCache cache = context.HttpContext.RequestServices.GetRequiredService<IDistributedCache>();
-        string path = context.HttpContext.Request.Path.Value?.ToLowerInvariant() ?? "unknown";
-        string cacheKey = $"Idempotent_{path}_{idempotencyKey}";
-        // string cacheKey = $"Idempotent_{idempotencyKey}";
+        string cacheKey = $"Idempotent_{idempotencyKey}";
         string? cachedResult = await cache.GetStringAsync(cacheKey);
-        if(cachedResult is not null) {
-            IdempotentResponse idempotentResponse = JsonSerializer.Deserialize<IdempotentResponse>(cachedResult)!;
 
-            var result = new ObjectResult(idempotentResponse.Value) {
-                StatusCode = 400
-            };
+        if (cachedResult is not null)
+        {
+            string path = context.HttpContext.Request.Path.Value?.ToLowerInvariant() ?? "unknown";
+            var idempotentResponse = JsonSerializer.Deserialize<IdempotentResponse>(cachedResult)!;
 
-            context.Result = result;
-            
-            // context.Result = new BadRequestObjectResult("Duplicate request: This operation has already been processed.");
+            if(!path.Equals(idempotentResponse.Path, StringComparison.OrdinalIgnoreCase)) {
+                context.Result = new BadRequestObjectResult(
+                    $"The Idempotency header key value '{idempotencyKey}' was used in a different request."
+                );
+            }
+            else {
+                Response<bool> response = CommonHelper.CreateResponse(
+                    false, 
+                    HttpStatusCode.BadRequest, 
+                    false, 
+                    $"The Idempotency header key value '{idempotencyKey}' was used in a different request."
+                );
+
+                context.Result = new BadRequestObjectResult(response);
+            }
+
             return;
         }
 
@@ -51,7 +68,10 @@ public class IdempotentAttribute : Attribute, IAsyncActionFilter
         if (executedContext.Result is ObjectResult { StatusCode: >= 200 and < 300 } objectResult)
         {
             int statusCode = objectResult.StatusCode ?? StatusCodes.Status200OK;
-            IdempotentResponse response = new(statusCode, objectResult.Value);
+            string path = context.HttpContext.Request.Path.Value?.ToLowerInvariant() ?? "unknown";
+            string method = context.HttpContext.Request.Method;
+
+            IdempotentResponse response = new(statusCode, objectResult.Value, path);
 
             await cache.SetStringAsync(
                 cacheKey,
@@ -65,12 +85,14 @@ public class IdempotentAttribute : Attribute, IAsyncActionFilter
 internal sealed class IdempotentResponse
 {
     [JsonConstructor]
-    public IdempotentResponse(int statusCode, object? value)
+    public IdempotentResponse(int statusCode, object? value, string path)
     {
         StatusCode = statusCode;
         Value = value;
+        Path = path;
     }
 
     public int StatusCode { get; }
     public object? Value { get; }
+    public string Path { get; }
 }

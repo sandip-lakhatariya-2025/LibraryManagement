@@ -1,7 +1,9 @@
 using System.Reflection;
+using LibraryManagement.Common;
 using LibraryManagement.DataAccess.Data;
 using LibraryManagement.DataAccess.IRepository;
 using LibraryManagement.DataAccess.Repository;
+using LibraryManagement.DataAccess.Repository.IRepository;
 using LibraryManagement.Services;
 using LibraryManagement.Services.IServices;
 using Microsoft.EntityFrameworkCore;
@@ -39,7 +41,9 @@ try
     builder.Host.UseSerilog();
 
     builder.Services.AddScoped<IBookRepository, BookRepository>();
+    builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
     builder.Services.AddScoped<IBookService, BookService>();
+    builder.Services.AddScoped<ICustomerService, CustomerService>();
     builder.Services.AddHttpContextAccessor();
     builder.Services.AddDistributedMemoryCache();
 
@@ -59,7 +63,7 @@ try
             Version = "v1"
         });
 
-        options.OperationFilter<ApiKeyFilter>();
+        options.OperationFilter<AddCommonHeadersOperationFilter>();
     });
 
     var app = builder.Build();

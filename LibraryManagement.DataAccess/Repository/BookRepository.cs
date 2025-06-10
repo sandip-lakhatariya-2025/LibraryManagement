@@ -13,13 +13,15 @@ public class BookRepository : IBookRepository
 {
     private readonly ApplicationDbContext _context;
 
-    public BookRepository(ApplicationDbContext context) {
+    public BookRepository(ApplicationDbContext context)
+    {
         _context = context;
     }
 
     public async Task<List<BooksViewModel>> GetAllAsync()
     {
-        return await _context.Books.Select(b => new BooksViewModel {
+        return await _context.Books.Select(b => new BooksViewModel
+        {
             Id = b.Id,
             BookName = b.BookName,
             AutherName = b.AutherName,
@@ -36,8 +38,9 @@ public class BookRepository : IBookRepository
         var filters = FilterParser.ParseFilters(queryParams);
         baseQuery = FilterParser.ApplyFilters(baseQuery, filters);
 
-        if(!string.IsNullOrWhiteSpace(paginationFilter.SearchTerm)) {
-            baseQuery = baseQuery.Where(b => 
+        if (!string.IsNullOrWhiteSpace(paginationFilter.SearchTerm))
+        {
+            baseQuery = baseQuery.Where(b =>
                 b.BookName.ToLower().Contains(paginationFilter.SearchTerm.ToLower()) ||
                 b.AutherName.ToLower().Contains(paginationFilter.SearchTerm.ToLower())
             );
@@ -54,30 +57,36 @@ public class BookRepository : IBookRepository
             _ => b => b.Id
         };
 
-        if(paginationFilter.IsAscending) {
-            baseQuery = baseQuery.OrderBy(keySelector); 
+        if (paginationFilter.IsAscending)
+        {
+            baseQuery = baseQuery.OrderBy(keySelector);
         }
-        else {
+        else
+        {
             baseQuery = baseQuery.OrderByDescending(keySelector);
         }
 
         int skipCount = (paginationFilter.PageNumber - 1) * paginationFilter.PageSize;
 
         List<BooksViewModel> books = await baseQuery
-            .Select(b => new BooksViewModel {
+            .Select(b => new BooksViewModel
+            {
                 Id = b.Id,
                 BookName = b.BookName,
                 AutherName = b.AutherName,
                 Description = b.Description,
                 Price = b.Price,
                 TotalCopies = b.TotalCopies,
-                PublisherDetails = new PublisherViewModel {
+                PublisherDetails = new PublisherViewModel
+                {
                     Id = b.Publisher.Id,
                     Name = b.Publisher.Name,
                     Address = b.Publisher.Address
                 },
-                ReaderDetails = new ReaderDetailsViewModel {
-                    CurrentReaders = b.CustomerBooks.Select(cb => new CustomerViewModel {
+                ReaderDetails = new ReaderDetailsViewModel
+                {
+                    CurrentReaders = b.CustomerBooks.Select(cb => new CustomerViewModel
+                    {
                         Id = cb.Customer.Id,
                         Name = cb.Customer.Name,
                         Email = cb.Customer.Email
@@ -94,7 +103,8 @@ public class BookRepository : IBookRepository
 
     public async Task<BooksViewModel?> GetFirstOrDefaultSelectedAsync(long id)
     {
-        return await _context.Books.Where(b => b.Id == id).Select(b => new BooksViewModel {
+        return await _context.Books.Where(b => b.Id == id).Select(b => new BooksViewModel
+        {
             Id = b.Id,
             BookName = b.BookName,
             AutherName = b.AutherName,
@@ -113,7 +123,8 @@ public class BookRepository : IBookRepository
     {
         return await _context.Books
             .Where(b => ids.Contains(b.Id))
-            .Select(b => new BooksViewModel {
+            .Select(b => new BooksViewModel
+            {
                 Id = b.Id,
                 BookName = b.BookName,
                 AutherName = b.AutherName,
@@ -130,7 +141,8 @@ public class BookRepository : IBookRepository
         return await _context.SaveChangesAsync() > 0;
     }
 
-    public async Task<bool> InsertRangeAsync(List<Book> books) {
+    public async Task<bool> InsertRangeAsync(List<Book> books)
+    {
         await _context.Books.AddRangeAsync(books);
         return await _context.SaveChangesAsync() > 0;
     }
@@ -141,7 +153,8 @@ public class BookRepository : IBookRepository
         return await _context.SaveChangesAsync() > 0;
     }
 
-    public async Task<bool> UpdateRangeAsync(List<Book> books) {
+    public async Task<bool> UpdateRangeAsync(List<Book> books)
+    {
         _context.Books.UpdateRange(books);
         return await _context.SaveChangesAsync() > 0;
     }
@@ -152,7 +165,8 @@ public class BookRepository : IBookRepository
         return await _context.SaveChangesAsync() > 0;
     }
 
-    public async Task<bool> DeleteRangeAsync(List<Book> books) {
+    public async Task<bool> DeleteRangeAsync(List<Book> books)
+    {
         _context.Books.RemoveRange(books);
         return await _context.SaveChangesAsync() > 0;
     }

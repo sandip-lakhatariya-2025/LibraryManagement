@@ -11,7 +11,7 @@ public class PagedResponse<T> : Response<T>
 
     public PagedResponse() : base() { }
 
-    public PagedResponse(T data, int nPageNumber, int nPageSize, int ntotalRecords, int ntotalPages, bool bIsSuccess, string sMessage, HttpStatusCode statusCode, string[] arrErrorMessages)
+    public PagedResponse(T data, int nPageNumber, int nPageSize, int ntotalRecords, int ntotalPages, bool bIsSuccess, string sMessage, HttpStatusCode statusCode, string[]? arrErrorMessages)
         : base(data, bIsSuccess, sMessage, arrErrorMessages, statusCode)
     {
         PageNumber = nPageNumber;

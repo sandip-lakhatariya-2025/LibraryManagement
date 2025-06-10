@@ -4,7 +4,7 @@ namespace LibraryManagement.Common;
 
 public static class CommonHelper
 {
-    public static Response<T> CreateResponse<T> (T data,  HttpStatusCode httpStatuscode, bool bIsSuccess, string sMessage = "", string[] arrErrorMessages = null) {
+    public static Response<T> CreateResponse<T> (T data,  HttpStatusCode httpStatuscode, bool bIsSuccess, string? sMessage = "", string[]? arrErrorMessages = null) {
         try
         {
             return new Response<T>(data, bIsSuccess, sMessage, arrErrorMessages, httpStatuscode);
@@ -24,7 +24,7 @@ public static class CommonHelper
         HttpStatusCode statusCode,
         bool bIsSuccess,
         string sMessage = "",
-        string[] arrErrorMessages = null)
+        string[]? arrErrorMessages = null)
     {
         try
         {
