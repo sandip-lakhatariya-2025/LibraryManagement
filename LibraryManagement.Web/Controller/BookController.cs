@@ -62,7 +62,7 @@ public class BookController : ControllerBase
 
     [HttpPost]
     [PermissionAuthorize(ClientEndpoint.Book, Permission.Write)]
-    [Idempotent]
+    [Idempotent(cacheTimeInMinutes:60, headerKeyName: "X-Idempotency-Key", isEnabled: true)]
     public async Task<IActionResult> AddBook(BooksViewModel objBookViewModel)
     {
         var response = await _bookService.AddBook(objBookViewModel);

@@ -13,24 +13,33 @@ namespace LibraryManagement.Common;
 public class IdempotentAttribute : Attribute, IAsyncActionFilter
 {
     private const int defaultCacheTimeInMinutes = 60;
+    private const string defaultHeaderKey = "X-Idempotency-Key";
+    
     private readonly TimeSpan _cacheDuration;
+    private readonly string _headerKeyName;
+    private readonly bool _isEnabled;
 
-    public IdempotentAttribute(int cacheTimeInMinutes = defaultCacheTimeInMinutes) 
+    public IdempotentAttribute(
+        int cacheTimeInMinutes = defaultCacheTimeInMinutes,
+        string headerKeyName = defaultHeaderKey,
+        bool isEnabled = true)
     {
         _cacheDuration = TimeSpan.FromMinutes(cacheTimeInMinutes);
+        _headerKeyName = headerKeyName;
+        _isEnabled = isEnabled;
     }
 
-    public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next) 
+    public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
-        if (!HttpMethods.IsPost(context.HttpContext.Request.Method))
+        if (!_isEnabled || !HttpMethods.IsPost(context.HttpContext.Request.Method))
         {
             await next();
             return;
         }
 
-        if (!context.HttpContext.Request.Headers.TryGetValue("X-Idempotency-Key", out StringValues idempotencyKey)) 
+        if (!context.HttpContext.Request.Headers.TryGetValue(_headerKeyName, out StringValues idempotencyKey))
         {
-            context.Result = new BadRequestObjectResult("Invalid or missing X-Idempotency-Key header");
+            context.Result = new BadRequestObjectResult($"Invalid or missing {_headerKeyName} header");
             return;
         }
 
@@ -43,17 +52,19 @@ public class IdempotentAttribute : Attribute, IAsyncActionFilter
             string path = context.HttpContext.Request.Path.Value?.ToLowerInvariant() ?? "unknown";
             var idempotentResponse = JsonSerializer.Deserialize<IdempotentResponse>(cachedResult)!;
 
-            if(!path.Equals(idempotentResponse.Path, StringComparison.OrdinalIgnoreCase)) {
+            if (!path.Equals(idempotentResponse.Path, StringComparison.OrdinalIgnoreCase))
+            {
                 context.Result = new BadRequestObjectResult(
-                    $"The Idempotency header key value '{idempotencyKey}' was used in a different request."
+                    $"The idempotency key '{idempotencyKey}' was used in a different request path."
                 );
             }
-            else {
+            else
+            {
                 Response<bool> response = CommonHelper.CreateResponse(
-                    false, 
-                    HttpStatusCode.BadRequest, 
-                    false, 
-                    $"The Idempotency header key value '{idempotencyKey}' was used in a different request."
+                    false,
+                    HttpStatusCode.BadRequest,
+                    false,
+                    $"The idempotency key '{idempotencyKey}' was already used."
                 );
 
                 context.Result = new BadRequestObjectResult(response);
@@ -68,14 +79,16 @@ public class IdempotentAttribute : Attribute, IAsyncActionFilter
         {
             int statusCode = objectResult.StatusCode ?? StatusCodes.Status200OK;
             string path = context.HttpContext.Request.Path.Value?.ToLowerInvariant() ?? "unknown";
-            string method = context.HttpContext.Request.Method;
 
             IdempotentResponse response = new(statusCode, objectResult.Value, path);
 
             await cache.SetStringAsync(
                 cacheKey,
                 JsonSerializer.Serialize(response),
-                new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = _cacheDuration }
+                new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = _cacheDuration
+                }
             );
         }
     }
