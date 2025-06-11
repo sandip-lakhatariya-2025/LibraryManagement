@@ -18,7 +18,11 @@ public class AddCommonHeadersOperationFilter : IOperationFilter
             Name = "X-API-KEY",
             In = ParameterLocation.Header,
             Required = true,
-            Description = "API Key needed to access this endpoint"
+            Description = "API Key needed to access this endpoint",
+            Schema = new OpenApiSchema
+            {
+                Type = "string"
+            }
         });
 
         // Add X-Idempotency-Key header only for POST requests
