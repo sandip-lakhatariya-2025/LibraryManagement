@@ -28,8 +28,7 @@ public class IdempotentAttribute : Attribute, IAsyncActionFilter
             return;
         }
 
-        if (!context.HttpContext.Request.Headers.TryGetValue("X-Idempotency-Key", out StringValues idempotencyKeyValue) ||
-            !Guid.TryParse(idempotencyKeyValue, out Guid idempotencyKey)) 
+        if (!context.HttpContext.Request.Headers.TryGetValue("X-Idempotency-Key", out StringValues idempotencyKey)) 
         {
             context.Result = new BadRequestObjectResult("Invalid or missing X-Idempotency-Key header");
             return;

@@ -34,11 +34,10 @@ public class AddCommonHeadersOperationFilter : IOperationFilter
                 Name = "X-Idempotency-Key",
                 In = ParameterLocation.Header,
                 Required = true,
-                Description = "Idempotency Key (GUID) to prevent duplicate requests",
+                Description = "Idempotency Key to prevent duplicate requests",
                 Schema = new OpenApiSchema
                 {
-                    Type = "string",
-                    Format = "uuid"
+                    Type = "string"
                 }
             });
         }
