@@ -1,3 +1,5 @@
+using System.Net;
+using LibraryManagement.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -30,13 +32,13 @@ public class GlobalExceptionHandlerMiddleware
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = StatusCodes.Status500InternalServerError;
 
-        var response = new
-        {
-            StatusCode = StatusCodes.Status500InternalServerError,
-            Succeeded = false,
-            Message = "An unexpected error occurred.",
-            Errors = new[] { exception.Message }
-        };
+        var response = CommonHelper.CreateResponse(
+            false, 
+            HttpStatusCode.NotFound, 
+            false, 
+            "An unexpected error occurred.",
+            new string[] { exception.Message }
+        );
 
         var jsonResponse = System.Text.Json.JsonSerializer.Serialize(response);
 
