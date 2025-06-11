@@ -63,6 +63,7 @@ try
             Version = "v1"
         });
 
+        options.EnableAnnotations();
         options.OperationFilter<AddCommonHeadersOperationFilter>();
     });
 

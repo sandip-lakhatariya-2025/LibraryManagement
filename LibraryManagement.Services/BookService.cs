@@ -87,7 +87,7 @@ public class BookService : IBookService
             }
         }
 
-        return CommonHelper.CreateResponse<BooksViewModel?>(null, HttpStatusCode.BadRequest, false, "Book not found.");
+        return CommonHelper.CreateResponse<BooksViewModel?>(null, HttpStatusCode.NotFound, false, "Book not found.");
     }
 
     public async Task<Response<List<BooksViewModel>>> UpdateListOfBooks(List<BooksViewModel> listBooksViewModels)
@@ -110,7 +110,7 @@ public class BookService : IBookService
             }
             else
             {
-                return CommonHelper.CreateResponse(new List<BooksViewModel>(), HttpStatusCode.BadRequest, false, "Some books are not found.");
+                return CommonHelper.CreateResponse(new List<BooksViewModel>(), HttpStatusCode.NotFound, false, "Some books are not found.");
             }
         }
 
@@ -139,7 +139,7 @@ public class BookService : IBookService
             }
         }
 
-        return CommonHelper.CreateResponse(false, HttpStatusCode.BadRequest, false, "Book not found.");
+        return CommonHelper.CreateResponse(false, HttpStatusCode.NotFound, false, "Book not found.");
     }
 
     public async Task<Response<bool>> DeleteListOfBooks(List<int> ids)
@@ -156,7 +156,7 @@ public class BookService : IBookService
             }
             else
             {
-                return CommonHelper.CreateResponse(false, HttpStatusCode.OK, false, "Some books are not found.");
+                return CommonHelper.CreateResponse(false, HttpStatusCode.NotFound, false, "Some books are not found.");
             }
         }
 

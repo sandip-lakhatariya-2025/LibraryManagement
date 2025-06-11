@@ -25,7 +25,6 @@ public class BookController : ControllerBase
 
     [HttpGet]
     [PermissionAuthorize(ClientEndpoint.Book, Permission.Read)]
-
     public async Task<ActionResult<List<BooksViewModel>>> GetBooks([FromQuery] PaginationFilter paginationFilter, [FromQuery] Dictionary<string, string>? filters, string? fields)
     {
 
