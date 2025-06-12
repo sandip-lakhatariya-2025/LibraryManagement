@@ -43,6 +43,19 @@ public class BookService : IBookService
         return await _bookRepository.GetFirstOrDefaultSelectedAsync(id);
     }
 
+    public async Task<Response<ExpandoObject>> GetBookByIdV2(long id, string? sFields)
+    {
+        BooksViewModel? objBookViewModel = await _bookRepository.GetFirstOrDefaultSelectedAsync(id);
+
+        if(objBookViewModel == null) {
+            return CommonHelper.CreateResponse(new ExpandoObject(), HttpStatusCode.NotFound, false, "Book not found.");
+        }
+
+        var shapedBook = ObjectShaper.GetShapedObject(objBookViewModel, sFields);
+
+        return CommonHelper.CreateResponse(shapedBook, HttpStatusCode.OK, true, $"Book details fetch successfully.");
+    }
+
     public async Task<Response<BooksViewModel?>> AddBook(BooksViewModel objBookViewModel)
     {
         Book objNewBook = new Book

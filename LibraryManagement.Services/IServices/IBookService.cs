@@ -9,6 +9,7 @@ public interface IBookService
 {
     Task<PagedResponse<List<ExpandoObject>>> GetPaginatedListOfBooks(PaginationFilter paginationFilter, IQueryCollection queryParams, string? sFields);
     Task<BooksViewModel?> GetBookById(long id);
+    Task<Response<ExpandoObject>> GetBookByIdV2(long id, string? sFields);
     Task<Response<BooksViewModel?>> AddBook(BooksViewModel objBookViewModel);
     Task<Response<BooksViewModel?>> UpdateBook(BooksViewModel objBookViewModel);
     Task<Response<List<BooksViewModel>>> UpdateListOfBooks(List<BooksViewModel> lstBooksViewModels);

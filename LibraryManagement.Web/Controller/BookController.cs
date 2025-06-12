@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Asp.Versioning;
 using LibraryManagement.Common;
 using LibraryManagement.Models.Enums;
@@ -35,7 +36,7 @@ public class BookController : ControllerBase
     [MapToApiVersion("1.0")]
     [HttpGet]
     [PermissionAuthorize(ClientEndpoint.Book, Permission.Read)]
-    public async Task<IActionResult> GetBooks([FromQuery] PaginationFilter paginationFilter, [FromQuery] Dictionary<string, string>? filters, string? fields)
+    public async Task<IActionResult> GetBooksV1([FromQuery] PaginationFilter paginationFilter, [FromQuery] Dictionary<string, string>? filters, string? fields)
     {
 
         var response = await _bookService.GetPaginatedListOfBooks(paginationFilter, Request.Query, fields);
@@ -61,7 +62,7 @@ public class BookController : ControllerBase
     [MapToApiVersion("1.0")]
     [HttpGet("{id}")]
     [PermissionAuthorize(ClientEndpoint.Book, Permission.Read)]
-    public async Task<IActionResult> GetBook(long id)
+    public async Task<IActionResult> GetBookV1(long id)
     {
         BooksViewModel? objBook = await _bookService.GetBookById(id);
 
@@ -71,6 +72,36 @@ public class BookController : ControllerBase
         }
 
         return Ok(objBook);
+    }
+
+    /// <summary>
+    /// Retrieves a book record by Id or a paginated list of books.
+    /// </summary>
+    /// <remarks>
+    /// **Sample request body:**
+    ///
+    ///     GET /api/v2/Book/
+    ///     GET /api/v2/Book/1
+    /// 
+    /// </remarks>
+    
+    [MapToApiVersion("2.0")]
+    [HttpGet]
+    [PermissionAuthorize(ClientEndpoint.Book, Permission.Read)]
+    public async Task<IActionResult> GetBooksV2(int id, [FromQuery] PaginationFilter paginationFilter, [FromQuery] Dictionary<string, string>? filters, string? fields)
+    {
+        if (id <= 0)
+        {
+            var pagedResponse = await _bookService.GetPaginatedListOfBooks(paginationFilter, Request.Query, fields);
+            return pagedResponse.Succeeded
+                ? Ok(pagedResponse)
+                : StatusCode((int)pagedResponse.StatusCode, pagedResponse);
+        }
+
+        var singleResponse = await _bookService.GetBookByIdV2(id, fields);
+        return singleResponse.Succeeded
+            ? Ok(singleResponse)
+            : StatusCode((int)singleResponse.StatusCode, singleResponse);
     }
 
     /// <summary>
