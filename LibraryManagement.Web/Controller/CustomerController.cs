@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using LibraryManagement.Common;
 using LibraryManagement.Models.Enums;
 using LibraryManagement.Models.ViewModels;
@@ -8,7 +9,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace LibraryManagement.Web.Controller;
 
 [ApiController]
-[Route("api/[Controller]")]
+[Route("api/v{version:apiVersion}/[controller]")]
+[ApiVersion("2.0")]
 public class CustomerController : ControllerBase
 {
 
@@ -26,15 +28,15 @@ public class CustomerController : ControllerBase
     /// <remarks>
     /// **Sample request body:**
     ///
-    ///     POST /api/Customer/
+    ///     POST /api/v2/Customer/
     ///     {
-    ///         "id": 101,
-    ///         "Name": "John",
+    ///         "name": "John",
     ///         "email": "john.doe@example.com",
     ///     }
     ///
     /// </remarks>
 
+    [MapToApiVersion("2.0")]
     [HttpPost]
     [PermissionAuthorize(ClientEndpoint.Customer, Permission.Write)]
     [Idempotent]

@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using LibraryManagement.Common;
 using LibraryManagement.Models.Enums;
 using LibraryManagement.Models.ViewModels;
@@ -8,7 +9,9 @@ using Microsoft.AspNetCore.Mvc;
 namespace LibraryManagement.Web.Controller;
 
 [ApiController]
-[Route("api/[Controller]")]
+[Route("api/v{version:apiVersion}/[controller]")]
+[ApiVersion("1.0")]
+[ApiVersion("2.0")]
 public class BookController : ControllerBase
 {
 
@@ -25,10 +28,11 @@ public class BookController : ControllerBase
     /// <remarks>
     /// **Sample request body:**
     ///
-    ///     GET /api/Book/
+    ///     GET /api/v1/Book/
     /// 
     /// </remarks>
     
+    [MapToApiVersion("1.0")]
     [HttpGet]
     [PermissionAuthorize(ClientEndpoint.Book, Permission.Read)]
     public async Task<IActionResult> GetBooks([FromQuery] PaginationFilter paginationFilter, [FromQuery] Dictionary<string, string>? filters, string? fields)
@@ -50,10 +54,11 @@ public class BookController : ControllerBase
     /// <remarks>
     /// **Sample request body:**
     ///
-    ///     GET /api/Book/1
+    ///     GET /api/v1/Book/1
     /// 
     /// </remarks>
     
+    [MapToApiVersion("1.0")]
     [HttpGet("{id}")]
     [PermissionAuthorize(ClientEndpoint.Book, Permission.Read)]
     public async Task<IActionResult> GetBook(long id)
@@ -75,9 +80,8 @@ public class BookController : ControllerBase
     /// <remarks>
     /// **Sample request body:**
     ///
-    ///     POST /api/Book/
+    ///     POST /api/v2/Book/
     ///     {
-    ///         "id": 8,
     ///         "bookName": "Atomic Habits",
     ///         "autherName": "James Clear",
     ///         "description": "A guide to building better habits.",
@@ -87,7 +91,8 @@ public class BookController : ControllerBase
     ///     }
     ///
     /// </remarks>
-
+    
+    [MapToApiVersion("2.0")]
     [HttpPost]
     [PermissionAuthorize(ClientEndpoint.Book, Permission.Write)]
     [Idempotent(cacheTimeInMinutes:60, headerKeyName: "X-Idempotency-Key", isEnabled: true)]
@@ -112,7 +117,7 @@ public class BookController : ControllerBase
     /// <remarks>
     /// **Sample request:**
     ///
-    ///     PUT /api/Book/8
+    ///     PUT /api/v2/Book/8
     ///     {
     ///         "id": 8,
     ///         "bookName": "Atomic Habits",
@@ -125,6 +130,7 @@ public class BookController : ControllerBase
     ///
     /// </remarks>
 
+    [MapToApiVersion("2.0")]
     [HttpPut("{id}")]
     [PermissionAuthorize(ClientEndpoint.Book, Permission.Update)]
     public async Task<IActionResult> UpdateBook(long id, BooksViewModel objBookViewModel)
@@ -152,7 +158,7 @@ public class BookController : ControllerBase
     /// <remarks>
     /// **Sample request body:**
     ///
-    ///     PUT /api/Book/
+    ///     PUT /api/v2/Book/
     ///     [
     ///         {
     ///             "id": 7,
@@ -174,7 +180,8 @@ public class BookController : ControllerBase
     ///         }
     ///     ]
     /// </remarks>
-
+    
+    [MapToApiVersion("2.0")]
     [HttpPut]
     [PermissionAuthorize(ClientEndpoint.Book, Permission.MultipleUpdate)]
     public async Task<IActionResult> UpdateBooks(List<BooksViewModel> listBooksViewModels)
@@ -197,10 +204,11 @@ public class BookController : ControllerBase
     /// <remarks>
     /// **Sample request:**
     ///
-    ///     DELETE /api/Book/8
+    ///     DELETE /api/v2/Book/8
     ///
     /// </remarks>
-
+    
+    [MapToApiVersion("2.0")]
     [HttpDelete("{id}")]
     [PermissionAuthorize(ClientEndpoint.Book, Permission.Delete)]
     public async Task<IActionResult> DeleteBook(long id)
@@ -222,11 +230,12 @@ public class BookController : ControllerBase
     /// <remarks>
     /// **Sample request body:**
     ///
-    ///     DELETE /api/Book/
+    ///     DELETE /api/v2/Book/
     ///     [8, 9, 10]
     ///
     /// </remarks>
-
+    
+    [MapToApiVersion("2.0")]
     [HttpDelete]
     [PermissionAuthorize(ClientEndpoint.Book, Permission.MultipleDelete)]
     public async Task<IActionResult> DeleteBooks(List<int> lstIds)
