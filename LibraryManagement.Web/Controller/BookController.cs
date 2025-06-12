@@ -22,10 +22,16 @@ public class BookController : ControllerBase
     /// <summary>
     /// Retrieves a paginated list of books.
     /// </summary>
-
+    /// <remarks>
+    /// **Sample request body:**
+    ///
+    ///     GET /api/Book/
+    /// 
+    /// </remarks>
+    
     [HttpGet]
     [PermissionAuthorize(ClientEndpoint.Book, Permission.Read)]
-    public async Task<ActionResult<List<BooksViewModel>>> GetBooks([FromQuery] PaginationFilter paginationFilter, [FromQuery] Dictionary<string, string>? filters, string? fields)
+    public async Task<IActionResult> GetBooks([FromQuery] PaginationFilter paginationFilter, [FromQuery] Dictionary<string, string>? filters, string? fields)
     {
 
         var response = await _bookService.GetPaginatedListOfBooks(paginationFilter, Request.Query, fields);
@@ -41,10 +47,16 @@ public class BookController : ControllerBase
     /// <summary>
     /// Retrieves a book record by Id.
     /// </summary>
-
+    /// <remarks>
+    /// **Sample request body:**
+    ///
+    ///     GET /api/Book/1
+    /// 
+    /// </remarks>
+    
     [HttpGet("{id}")]
     [PermissionAuthorize(ClientEndpoint.Book, Permission.Read)]
-    public async Task<ActionResult<BooksViewModel>> GetBook(long id)
+    public async Task<IActionResult> GetBook(long id)
     {
         BooksViewModel? objBook = await _bookService.GetBookById(id);
 
@@ -53,16 +65,33 @@ public class BookController : ControllerBase
             return NotFound();
         }
 
-        return objBook;
+        return Ok(objBook);
     }
 
     /// <summary>
     /// Add new Book record.
     /// </summary>
+    /// <param name="objBookViewModel"></param>
+    /// <remarks>
+    /// **Sample request body:**
+    ///
+    ///     POST /api/Book/
+    ///     {
+    ///         "id": 8,
+    ///         "bookName": "Atomic Habits",
+    ///         "autherName": "James Clear",
+    ///         "description": "A guide to building better habits.",
+    ///         "price": 750,
+    ///         "totalCopies": 120,
+    ///         "publisherId": 2
+    ///     }
+    ///
+    /// </remarks>
 
     [HttpPost]
     [PermissionAuthorize(ClientEndpoint.Book, Permission.Write)]
     [Idempotent(cacheTimeInMinutes:60, headerKeyName: "X-Idempotency-Key", isEnabled: true)]
+    [ProducesResponseType(200), ProducesResponseType(400)]
     public async Task<IActionResult> AddBook(BooksViewModel objBookViewModel)
     {
         var response = await _bookService.AddBook(objBookViewModel);
@@ -76,8 +105,25 @@ public class BookController : ControllerBase
     }
 
     /// <summary>
-    /// Update the Book record.
+    /// Updates a book by its ID.
     /// </summary>
+    /// <param name="id">The ID of the book to update.</param>
+    /// <param name="objBookViewModel">The updated book details.</param>
+    /// <remarks>
+    /// **Sample request:**
+    ///
+    ///     PUT /api/Book/8
+    ///     {
+    ///         "id": 8,
+    ///         "bookName": "Atomic Habits",
+    ///         "autherName": "James Clear",
+    ///         "description": "A guide to building better habits.",
+    ///         "price": 750,
+    ///         "totalCopies": 120,
+    ///         "publisherId": 2
+    ///     }
+    ///
+    /// </remarks>
 
     [HttpPut("{id}")]
     [PermissionAuthorize(ClientEndpoint.Book, Permission.Update)]
@@ -100,8 +146,34 @@ public class BookController : ControllerBase
     }
 
     /// <summary>
-    /// Update the List of Book records.
+    /// Updates multiple book records.
     /// </summary>
+    /// <param name="listBooksViewModels">A list of book view models to update.</param>
+    /// <remarks>
+    /// **Sample request body:**
+    ///
+    ///     PUT /api/Book/
+    ///     [
+    ///         {
+    ///             "id": 7,
+    ///             "bookName": "The 7 Habits of Highly Effective People",
+    ///             "autherName": "Stephen R. Covey",
+    ///             "description": "A powerful book on effectiveness.",
+    ///             "price": 890,
+    ///             "totalCopies": 100,
+    ///             "publisherId": 1
+    ///         },
+    ///         {
+    ///             "id": 8,
+    ///             "bookName": "Atomic Habits",
+    ///             "autherName": "James Clear",
+    ///             "description": "A guide to building better habits.",
+    ///             "price": 750,
+    ///             "totalCopies": 120,
+    ///             "publisherId": 2
+    ///         }
+    ///     ]
+    /// </remarks>
 
     [HttpPut]
     [PermissionAuthorize(ClientEndpoint.Book, Permission.MultipleUpdate)]
@@ -119,8 +191,15 @@ public class BookController : ControllerBase
     }
 
     /// <summary>
-    /// Delete the Book record.
+    /// Deletes a book by its ID.
     /// </summary>
+    /// <param name="id">The ID of the book to delete.</param>
+    /// <remarks>
+    /// **Sample request:**
+    ///
+    ///     DELETE /api/Book/8
+    ///
+    /// </remarks>
 
     [HttpDelete("{id}")]
     [PermissionAuthorize(ClientEndpoint.Book, Permission.Delete)]
@@ -137,8 +216,16 @@ public class BookController : ControllerBase
     }
 
     /// <summary>
-    /// Delete the List of Book records.
+    /// Deletes multiple books by their IDs.
     /// </summary>
+    /// <param name="lstIds">A list of book IDs to delete.</param>
+    /// <remarks>
+    /// **Sample request body:**
+    ///
+    ///     DELETE /api/Book/
+    ///     [8, 9, 10]
+    ///
+    /// </remarks>
 
     [HttpDelete]
     [PermissionAuthorize(ClientEndpoint.Book, Permission.MultipleDelete)]

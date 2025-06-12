@@ -31,7 +31,7 @@ public class BookRepository : IBookRepository
         }).OrderBy(b => b.Id).ToListAsync();
     }
 
-    public async Task<(List<BooksViewModel> Books, int TotalRecords)> GetPaginatedListAsync(PaginationFilter paginationFilter, IQueryCollection queryParams)
+    public async Task<(List<BookDetailsViewModel> Books, int TotalRecords)> GetPaginatedListAsync(PaginationFilter paginationFilter, IQueryCollection queryParams)
     {
         IQueryable<Book> baseQuery = _context.Books;
 
@@ -68,8 +68,8 @@ public class BookRepository : IBookRepository
 
         int skipCount = (paginationFilter.PageNumber - 1) * paginationFilter.PageSize;
 
-        List<BooksViewModel> lstBooks = await baseQuery
-            .Select(b => new BooksViewModel
+        List<BookDetailsViewModel> lstBooks = await baseQuery
+            .Select(b => new BookDetailsViewModel
             {
                 Id = b.Id,
                 BookName = b.BookName,

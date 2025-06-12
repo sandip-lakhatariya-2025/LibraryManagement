@@ -27,8 +27,4 @@ public class BooksViewModel
 
     [Required(ErrorMessage = "PublisherId is required.")]
     public long PublisherId { get; set; }
-
-    public PublisherViewModel? PublisherDetails { get; set; }
-
-    public ReaderDetailsViewModel? ReaderDetails { get; set; }
 }
