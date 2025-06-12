@@ -10,7 +10,7 @@ namespace LibraryManagement.Web.Controller;
 
 [ApiController]
 [Route("api/v{version:apiVersion}/[controller]")]
-[ApiVersion("2.0")]
+[ApiVersion("2")]
 public class CustomerController : ControllerBase
 {
 
@@ -36,7 +36,7 @@ public class CustomerController : ControllerBase
     ///
     /// </remarks>
 
-    [MapToApiVersion("2.0")]
+    [MapToApiVersion("2")]
     [HttpPost]
     [PermissionAuthorize(ClientEndpoint.Customer, Permission.Write)]
     [Idempotent]

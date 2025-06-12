@@ -11,8 +11,8 @@ namespace LibraryManagement.Web.Controller;
 
 [ApiController]
 [Route("api/v{version:apiVersion}/[controller]")]
-[ApiVersion("1.0")]
-[ApiVersion("2.0")]
+[ApiVersion("1")]
+[ApiVersion("2")]
 public class BookController : ControllerBase
 {
 
@@ -33,7 +33,7 @@ public class BookController : ControllerBase
     /// 
     /// </remarks>
     
-    [MapToApiVersion("1.0")]
+    [MapToApiVersion("1")]
     [HttpGet]
     [PermissionAuthorize(ClientEndpoint.Book, Permission.Read)]
     public async Task<IActionResult> GetBooksV1([FromQuery] PaginationFilter paginationFilter, [FromQuery] Dictionary<string, string>? filters, string? fields)
@@ -59,7 +59,7 @@ public class BookController : ControllerBase
     /// 
     /// </remarks>
     
-    [MapToApiVersion("1.0")]
+    [MapToApiVersion("1")]
     [HttpGet("{id}")]
     [PermissionAuthorize(ClientEndpoint.Book, Permission.Read)]
     public async Task<IActionResult> GetBookV1(long id)
@@ -85,7 +85,7 @@ public class BookController : ControllerBase
     /// 
     /// </remarks>
     
-    [MapToApiVersion("2.0")]
+    [MapToApiVersion("2")]
     [HttpGet]
     [PermissionAuthorize(ClientEndpoint.Book, Permission.Read)]
     public async Task<IActionResult> GetBooksV2(int id, [FromQuery] PaginationFilter paginationFilter, [FromQuery] Dictionary<string, string>? filters, string? fields)
@@ -123,7 +123,7 @@ public class BookController : ControllerBase
     ///
     /// </remarks>
     
-    [MapToApiVersion("2.0")]
+    [MapToApiVersion("2")]
     [HttpPost]
     [PermissionAuthorize(ClientEndpoint.Book, Permission.Write)]
     [Idempotent(cacheTimeInMinutes:60, headerKeyName: "X-Idempotency-Key", isEnabled: true)]
@@ -161,7 +161,7 @@ public class BookController : ControllerBase
     ///
     /// </remarks>
 
-    [MapToApiVersion("2.0")]
+    [MapToApiVersion("2")]
     [HttpPut("{id}")]
     [PermissionAuthorize(ClientEndpoint.Book, Permission.Update)]
     public async Task<IActionResult> UpdateBook(long id, BooksViewModel objBookViewModel)
@@ -212,7 +212,7 @@ public class BookController : ControllerBase
     ///     ]
     /// </remarks>
     
-    [MapToApiVersion("2.0")]
+    [MapToApiVersion("2")]
     [HttpPut]
     [PermissionAuthorize(ClientEndpoint.Book, Permission.MultipleUpdate)]
     public async Task<IActionResult> UpdateBooks(List<BooksViewModel> listBooksViewModels)
@@ -239,7 +239,7 @@ public class BookController : ControllerBase
     ///
     /// </remarks>
     
-    [MapToApiVersion("2.0")]
+    [MapToApiVersion("2")]
     [HttpDelete("{id}")]
     [PermissionAuthorize(ClientEndpoint.Book, Permission.Delete)]
     public async Task<IActionResult> DeleteBook(long id)
@@ -266,7 +266,7 @@ public class BookController : ControllerBase
     ///
     /// </remarks>
     
-    [MapToApiVersion("2.0")]
+    [MapToApiVersion("2")]
     [HttpDelete]
     [PermissionAuthorize(ClientEndpoint.Book, Permission.MultipleDelete)]
     public async Task<IActionResult> DeleteBooks(List<int> lstIds)

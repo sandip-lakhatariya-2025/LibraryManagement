@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Text.Json;
 using Asp.Versioning;
 using Asp.Versioning.ApiExplorer;
 using LibraryManagement.Common;
@@ -53,7 +54,12 @@ try
     builder.Services.AddHttpContextAccessor();
     builder.Services.AddDistributedMemoryCache();
 
-    builder.Services.AddControllers();
+    builder.Services.AddControllers()
+        .AddJsonOptions(options =>
+        {
+            options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+            options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
+        });
 
     builder.Services.AddApiVersioning(options => 
     {

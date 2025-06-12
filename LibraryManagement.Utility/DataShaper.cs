@@ -44,7 +44,7 @@ public static class ObjectShaper
 
             if (group.Count() == 1 && group.First().Equals(topPropName, StringComparison.OrdinalIgnoreCase))
             {
-                expando[topPropName] = value;
+                expando[propInfo.Name] = value;
             }
             else
             {
@@ -56,11 +56,11 @@ public static class ObjectShaper
                     {
                         list.Add(GetShapedObject(item, string.Join(",", nestedFields)));
                     }
-                    expando[topPropName] = list;
+                    expando[propInfo.Name] = list;
                 }
                 else
                 {
-                    expando[topPropName] = GetShapedObject(value, string.Join(",", nestedFields));
+                    expando[propInfo.Name] = GetShapedObject(value, string.Join(",", nestedFields));
                 }
             }
         }
