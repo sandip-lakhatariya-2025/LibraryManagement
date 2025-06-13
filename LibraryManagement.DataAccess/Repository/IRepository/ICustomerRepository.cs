@@ -3,8 +3,7 @@ using LibraryManagement.Models.ViewModels;
 
 namespace LibraryManagement.DataAccess.Repository.IRepository;
 
-public interface ICustomerRepository
+public interface ICustomerRepository : IBaseRepository<Customer>
 {
-    Task<CustomerViewModel?> GetFirstOrDefaultSelectedAsync(long id);
-    Task<bool> InsertAsync(Customer customer);
+    
 }

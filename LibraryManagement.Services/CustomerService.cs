@@ -24,19 +24,24 @@ public class CustomerService : ICustomerService
             Email = objCustomerViewModel.Email
         };
 
-        bool isSuccess = await _customerRepository.InsertAsync(objNewCustomer);
+        await _customerRepository.InsertAsync(objNewCustomer);
+        await _customerRepository.SaveChangesAsync();
 
-        if (isSuccess)
-        {
-            CustomerViewModel? objAddedCustomer = await GetCustomerById(objNewCustomer.Id);
-            return CommonHelper.CreateResponse(objAddedCustomer, HttpStatusCode.OK, true, "Customer added successfully.");
-        }
+        CustomerViewModel? objAddedCustomer = await GetCustomerById(objNewCustomer.Id);
 
-        return CommonHelper.CreateResponse<CustomerViewModel?>(null, HttpStatusCode.BadRequest, false, $"Failed to add Customer.");
+        return CommonHelper.CreateResponse(objAddedCustomer, HttpStatusCode.OK, true, "Customer added successfully.");
+
     }
 
     public async Task<CustomerViewModel?> GetCustomerById(long id)
     {
-        return await _customerRepository.GetFirstOrDefaultSelectedAsync(id);
+        return await _customerRepository.GetFirstOrDefaultAsync(
+            c => c.Id == id,
+            c => new CustomerViewModel {
+                Id = c.Id,
+                Name = c.Name,
+                Email = c.Email
+            }
+        );
     }
 }

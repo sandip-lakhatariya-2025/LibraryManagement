@@ -6,29 +6,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagement.DataAccess.Repository;
 
-public class CustomerRepository : ICustomerRepository
+public class CustomerRepository : BaseRepository<Customer>, ICustomerRepository
 {
     private readonly ApplicationDbContext _context;
 
-    public CustomerRepository(ApplicationDbContext context)
+    public CustomerRepository(ApplicationDbContext context) : base(context)
     {
         _context = context;
-    }
-
-    public async Task<CustomerViewModel?> GetFirstOrDefaultSelectedAsync(long id)
-    {
-        return await _context.Customers.Where(c => c.Id == id).Select(c => new CustomerViewModel
-        {
-            Id = c.Id,
-            Name = c.Name,
-            Email = c.Email
-        }).FirstOrDefaultAsync();
-    }
-
-    public async Task<bool> InsertAsync(Customer customer)
-    {
-        await _context.Customers.AddAsync(customer);
-        return await _context.SaveChangesAsync() > 0;
     }
 
 }
