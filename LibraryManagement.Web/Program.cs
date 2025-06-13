@@ -48,8 +48,10 @@ try
 
     builder.Services.AddScoped<IBookRepository, BookRepository>();
     builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+    builder.Services.AddScoped<IUserRepository, UserRepository>();
     builder.Services.AddScoped<IBookService, BookService>();
     builder.Services.AddScoped<ICustomerService, CustomerService>();
+    builder.Services.AddScoped<IAuthService, AuthService>();
     builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
     builder.Services.AddHttpContextAccessor();
     builder.Services.AddDistributedMemoryCache();

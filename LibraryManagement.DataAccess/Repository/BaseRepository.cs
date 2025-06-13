@@ -77,4 +77,8 @@ public class BaseRepository<T> : IBaseRepository<T> where T : class
         _context.RemoveRange(lstEntity);
     }
 
+    public async Task<bool> ExistAsync(Expression<Func<T, bool>> expFilter)
+    {
+        return await _dbSet.AnyAsync(expFilter);
+    }
 }

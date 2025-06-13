@@ -36,5 +36,7 @@ public interface IBaseRepository<T> where T : class
 
     void DeleteList(List<T> lstEntity);
 
+    Task<bool> ExistAsync(Expression<Func<T, bool>> expFilter);
+
     Task SaveChangesAsync();
 }
