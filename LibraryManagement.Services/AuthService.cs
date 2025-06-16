@@ -14,9 +14,10 @@ public class AuthService : IAuthService
 {
 
     private readonly IUserRepository _userRepository;
-
-    public AuthService(IUserRepository userRepository) {
+    private readonly IConfiguration _configuration;
+    public AuthService(IUserRepository userRepository, IConfiguration configuration) {
         _userRepository = userRepository;
+        _configuration = configuration;
     }
 
     public async Task<Response<UserRegisterViewModel?>> RegisterUser(UserRegisterViewModel objUserRegisterViewModel)
@@ -31,7 +32,7 @@ public class AuthService : IAuthService
             Email = objUserRegisterViewModel.Email,
             Firstname = objUserRegisterViewModel.Firstname,
             Lastname = objUserRegisterViewModel.Lastname,
-            Password = objUserRegisterViewModel.Password,
+            Password = HashPassword(objUserRegisterViewModel.Password),
             Role = objUserRegisterViewModel.Role
         };
 
@@ -45,7 +46,7 @@ public class AuthService : IAuthService
                 Email = u.Email,
                 Firstname = u.Firstname,
                 Lastname = u.Lastname,
-                Password = u.Password,
+                Password = objUserRegisterViewModel.Password,
                 Role = u.Role,
             }
         );
@@ -54,16 +55,30 @@ public class AuthService : IAuthService
 
     }
 
-    public Task<Response<UserLoginViewModel?>> LoginUser(UserLoginViewModel objUserLoginViewModel)
+    public async Task<Response<AuthResultViewModel?>> LoginUser(UserLoginViewModel objUserLoginViewModel)
     {
-        throw new NotImplementedException();
+        User? objExistingUser = await _userRepository.GetFirstOrDefaultAsync(
+            u => u.Email == objUserLoginViewModel.Email && 
+            u.Password == HashPassword(objUserLoginViewModel.Password),
+            u => new User {
+                Id = u.Id,
+                Email = u.Email
+            }
+        );
+
+        if(objExistingUser == null) {
+            return CommonHelper.CreateResponse<AuthResultViewModel>(new AuthResultViewModel(), HttpStatusCode.OK, true, "Invalid credentials.");
+        }
+
+        return CommonHelper.CreateResponse<AuthResultViewModel?>(null, HttpStatusCode.OK, true, "User logged in successfully.");
+
     }
 
-    // private string HashApiKey(string apiKey)
-    // {
-    //     string _salt = configuration["ApiSecurity:ApiKeySalt"]
-    //     using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(_salt));
-    //     var hashBytes = hmac.ComputeHash(Encoding.UTF8.GetBytes(apiKey));
-    //     return Convert.ToBase64String(hashBytes);
-    // }
+    private string HashPassword(string sPassword)
+    {
+        string _salt = _configuration["PasswordSecurity:PasswordSalt"]!;
+        using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(_salt));
+        var hashBytes = hmac.ComputeHash(Encoding.UTF8.GetBytes(sPassword));
+        return Convert.ToBase64String(hashBytes);
+    }
 }

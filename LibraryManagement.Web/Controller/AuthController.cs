@@ -31,15 +31,24 @@ public class AuthController : ControllerBase
     ///         "firstName": "John",
     ///         "lastName": "Doe",
     ///         "password": "SecurePassword123!",
-    ///         "role": "admin"
+    ///         "role": "Admin"
     ///     }
     ///
     /// </remarks>
 
     [MapToApiVersion(2)]
-    [HttpPost]
+    [HttpPost("Register")]
     public async Task<IActionResult> Register(UserRegisterViewModel objUserRegisterViewModel) {
         var response = await _authService.RegisterUser(objUserRegisterViewModel);
+        return response.Succeeded 
+            ? Ok(response)
+            : StatusCode((int)response.StatusCode, response);
+    }
+
+    [MapToApiVersion(2)]
+    [HttpPost("Login")]
+    public async Task<IActionResult> Login(UserLoginViewModel objUserLoginViewModel) {
+        var response = await _authService.LoginUser(objUserLoginViewModel);
         return response.Succeeded 
             ? Ok(response)
             : StatusCode((int)response.StatusCode, response);

@@ -6,5 +6,5 @@ namespace LibraryManagement.Services.IServices;
 public interface IAuthService
 {
     Task<Response<UserRegisterViewModel?>> RegisterUser(UserRegisterViewModel objUserRegisterViewModel);
-    Task<Response<UserLoginViewModel?>> LoginUser(UserLoginViewModel objUserLoginViewModel);
+    Task<Response<AuthResultViewModel?>> LoginUser(UserLoginViewModel objUserLoginViewModel);
 }
