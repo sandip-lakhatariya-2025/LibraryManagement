@@ -45,6 +45,21 @@ public class AuthController : ControllerBase
             : StatusCode((int)response.StatusCode, response);
     }
 
+    /// <summary>
+    /// Login to the system.
+    /// </summary>
+    /// <param name="objUserLoginViewModel"></param>
+    /// <remarks>
+    /// **Sample request body:**
+    ///
+    ///     POST /api/v2/User/Login
+    ///     {
+    ///         "email": "john.doe@example.com",
+    ///         "password": "SecurePassword123!",
+    ///     }
+    ///
+    /// </remarks>
+
     [MapToApiVersion(2)]
     [HttpPost("Login")]
     public async Task<IActionResult> Login(UserLoginViewModel objUserLoginViewModel) {

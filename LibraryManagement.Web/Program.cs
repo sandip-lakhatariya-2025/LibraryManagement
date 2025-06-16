@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Text;
 using System.Text.Json;
 using Asp.Versioning;
 using Asp.Versioning.ApiExplorer;
@@ -10,8 +11,10 @@ using LibraryManagement.DataAccess.Repository.IRepository;
 using LibraryManagement.Services;
 using LibraryManagement.Services.IServices;
 using LibraryManagement.Web;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Events;
@@ -56,6 +59,31 @@ try
     builder.Services.AddHttpContextAccessor();
     builder.Services.AddDistributedMemoryCache();
 
+    builder.Services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+        }).AddJwtBearer(jwt =>
+        {
+            var key = Encoding.ASCII.GetBytes(builder.Configuration["JwtConfig:Key"]!);
+            jwt.SaveToken = true;
+            jwt.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidAudience = builder.Configuration["JwtConfig:Audience"],
+                ValidIssuer = builder.Configuration["JwtConfig:Issuer"],
+                ValidateLifetime = true,
+                RequireExpirationTime = true,
+                ClockSkew = TimeSpan.Zero
+            };
+        }
+    );
+    builder.Services.AddAuthorization();
+
     builder.Services.AddControllers()
         .AddJsonOptions(options =>
         {
@@ -90,6 +118,30 @@ try
         options.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
 
         options.OperationFilter<AddCommonHeadersOperationFilter>();
+
+        options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme{
+            Name = "Authorization",
+            Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below. Example: 'Bearer 12345abcdef'",
+            In = ParameterLocation.Header,
+            Type = SecuritySchemeType.ApiKey,
+            Scheme = "Bearer",
+            BearerFormat = "JWT"
+        });
+
+        options.AddSecurityRequirement(new OpenApiSecurityRequirement
+        {
+            {
+                new OpenApiSecurityScheme 
+                {
+                    Reference = new OpenApiReference 
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    }
+                },
+                new string[] {}
+            }
+        });
     });
 
     var app = builder.Build();
@@ -108,6 +160,9 @@ try
     }
 
     app.UseHttpsRedirection();
+
+    app.UseAuthentication();
+    app.UseAuthorization();
 
     app.UseMiddleware<ApiKeyMiddleware>();
     app.UseMiddleware<GlobalExceptionHandlerMiddleware>();

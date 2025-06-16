@@ -5,6 +5,7 @@ using LibraryManagement.Models.Enums;
 using LibraryManagement.Models.ViewModels;
 using LibraryManagement.Services;
 using LibraryManagement.Services.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryManagement.Web.Controller;
@@ -13,6 +14,7 @@ namespace LibraryManagement.Web.Controller;
 [Route("api/v{version:apiVersion}/[controller]")]
 [ApiVersion("1")]
 [ApiVersion("2")]
+[Authorize]
 public class BookController : ControllerBase
 {
 
@@ -105,7 +107,7 @@ public class BookController : ControllerBase
     }
 
     /// <summary>
-    /// Add new Book record.
+    /// Add new book record.
     /// </summary>
     /// <param name="objBookViewModel"></param>
     /// <remarks>

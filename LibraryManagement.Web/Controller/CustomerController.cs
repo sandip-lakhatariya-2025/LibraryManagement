@@ -4,6 +4,7 @@ using LibraryManagement.Models.Enums;
 using LibraryManagement.Models.ViewModels;
 using LibraryManagement.Services;
 using LibraryManagement.Services.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryManagement.Web.Controller;
@@ -11,6 +12,7 @@ namespace LibraryManagement.Web.Controller;
 [ApiController]
 [Route("api/v{version:apiVersion}/[controller]")]
 [ApiVersion("2")]
+[Authorize(Roles = "Admin")]
 public class CustomerController : ControllerBase
 {
 

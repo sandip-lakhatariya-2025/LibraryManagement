@@ -1,4 +1,6 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Net;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using LibraryManagement.Common;
@@ -7,6 +9,7 @@ using LibraryManagement.Models.Models;
 using LibraryManagement.Models.ViewModels;
 using LibraryManagement.Services.IServices;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 
 namespace LibraryManagement.Services;
 
@@ -55,22 +58,27 @@ public class AuthService : IAuthService
 
     }
 
-    public async Task<Response<AuthResultViewModel?>> LoginUser(UserLoginViewModel objUserLoginViewModel)
+    public async Task<Response<AuthResultViewModel>> LoginUser(UserLoginViewModel objUserLoginViewModel)
     {
         User? objExistingUser = await _userRepository.GetFirstOrDefaultAsync(
             u => u.Email == objUserLoginViewModel.Email && 
             u.Password == HashPassword(objUserLoginViewModel.Password),
             u => new User {
                 Id = u.Id,
-                Email = u.Email
+                Email = u.Email,
+                Role = u.Role
             }
         );
 
         if(objExistingUser == null) {
-            return CommonHelper.CreateResponse<AuthResultViewModel>(new AuthResultViewModel(), HttpStatusCode.OK, true, "Invalid credentials.");
+            return CommonHelper.CreateResponse(new AuthResultViewModel(), HttpStatusCode.NotFound, false, "Invalid credentials.");
         }
 
-        return CommonHelper.CreateResponse<AuthResultViewModel?>(null, HttpStatusCode.OK, true, "User logged in successfully.");
+        AuthResultViewModel? objAuthResult = new AuthResultViewModel{
+            AccessToken = GenerateJWTToken(objExistingUser)
+        };
+
+        return CommonHelper.CreateResponse(objAuthResult, HttpStatusCode.OK, true, "User logged in successfully.");
 
     }
 
@@ -80,5 +88,26 @@ public class AuthService : IAuthService
         using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(_salt));
         var hashBytes = hmac.ComputeHash(Encoding.UTF8.GetBytes(sPassword));
         return Convert.ToBase64String(hashBytes);
+    }
+
+    private string GenerateJWTToken(User objUser)
+    {
+        SymmetricSecurityKey securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtConfig:Key"]!));
+        SigningCredentials credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+        Claim[] claims = new[] {
+            new Claim(ClaimTypes.Role, objUser.Role.ToString()),
+            new Claim(ClaimTypes.Email, objUser.Email),
+        };
+
+        JwtSecurityToken tokenDescriptor = new JwtSecurityToken(
+            issuer: _configuration["JwtConfig:Issuer"],
+            audience: _configuration["JwtConfig:Audience"],
+            claims: claims,
+            expires: DateTime.UtcNow.AddHours(1),
+            signingCredentials: credentials
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
     }
 }
