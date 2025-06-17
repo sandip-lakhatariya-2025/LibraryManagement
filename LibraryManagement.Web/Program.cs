@@ -1,20 +1,14 @@
 using System.Reflection;
-using System.Text;
 using System.Text.Json;
 using Asp.Versioning;
 using Asp.Versioning.ApiExplorer;
 using LibraryManagement.Common;
 using LibraryManagement.DataAccess.Data;
-using LibraryManagement.DataAccess.IRepository;
-using LibraryManagement.DataAccess.Repository;
-using LibraryManagement.DataAccess.Repository.IRepository;
 using LibraryManagement.Services;
-using LibraryManagement.Services.IServices;
 using LibraryManagement.Web;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using LibraryManagement.Web.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Events;
@@ -49,39 +43,13 @@ try
 
     builder.Host.UseSerilog();
 
-    builder.Services.AddScoped<IBookRepository, BookRepository>();
-    builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
-    builder.Services.AddScoped<IUserRepository, UserRepository>();
-    builder.Services.AddScoped<IBookService, BookService>();
-    builder.Services.AddScoped<ICustomerService, CustomerService>();
-    builder.Services.AddScoped<IAuthService, AuthService>();
+    builder.Services.RegisterServices();
+    builder.Services.RegisterSecurityServices(builder.Configuration);
     builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
+
     builder.Services.AddHttpContextAccessor();
     builder.Services.AddDistributedMemoryCache();
 
-    builder.Services.AddAuthentication(options =>
-        {
-            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-        }).AddJwtBearer(jwt =>
-        {
-            var key = Encoding.ASCII.GetBytes(builder.Configuration["JwtConfig:Key"]!);
-            jwt.SaveToken = true;
-            jwt.TokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(key),
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidAudience = builder.Configuration["JwtConfig:Audience"],
-                ValidIssuer = builder.Configuration["JwtConfig:Issuer"],
-                ValidateLifetime = true,
-                RequireExpirationTime = true,
-                ClockSkew = TimeSpan.Zero
-            };
-        }
-    );
     builder.Services.AddAuthorization();
 
     builder.Services.AddControllers()

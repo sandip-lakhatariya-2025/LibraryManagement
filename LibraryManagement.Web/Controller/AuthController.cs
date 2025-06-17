@@ -25,7 +25,7 @@ public class AuthController : ControllerBase
     /// <remarks>
     /// **Sample request body:**
     ///
-    ///     POST /api/v2/User/Register
+    ///     POST /api/v2/Auth/Register
     ///     {
     ///         "email": "john.doe@example.com",
     ///         "firstName": "John",
@@ -52,7 +52,7 @@ public class AuthController : ControllerBase
     /// <remarks>
     /// **Sample request body:**
     ///
-    ///     POST /api/v2/User/Login
+    ///     POST /api/v2/Auth/Login
     ///     {
     ///         "email": "john.doe@example.com",
     ///         "password": "SecurePassword123!",
