@@ -64,6 +64,7 @@ public class BookRepository : BaseRepository<Book>, IBookRepository
                 Description = b.Description,
                 Price = b.Price,
                 TotalCopies = b.TotalCopies,
+                PublisherId = b.PublisherId,
                 PublisherDetails = new PublisherViewModel
                 {
                     Id = b.Publisher.Id,

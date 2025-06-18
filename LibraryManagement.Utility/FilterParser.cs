@@ -1,5 +1,6 @@
 ﻿using System.Linq.Expressions;
 using LibraryManagement.Models.Enums;
+using LibraryManagement.Models.Models;
 using LibraryManagement.Models.ViewModels;
 using Microsoft.AspNetCore.Http;
 
@@ -26,18 +27,19 @@ public static class FilterParser
             key = key.Replace("[or]", "");
 
             string[] parts = key.Split('.');
-            string property = parts[0];
-            string op = parts.Length > 1 ? parts[1] : "eq";
 
-            if (reservedKeys.Contains(property)){
+            if (reservedKeys.Contains(parts[0])){
                 continue;
             }
+
+            var propertyPath = parts.SkipLast(1);
+            string op = parts.Length > 1 ? parts.Last() : "eq";
 
             if (Enum.TryParse<FilterOperator>(op, true, out var filterOperator))
             {
                 filters.Add(new FilterCriteria
                 {
-                    PropertyName = property,
+                    PropertyPath = propertyPath,
                     Operator = filterOperator,
                     Value = value,
                     IsOrCondition = isOr
@@ -47,6 +49,7 @@ public static class FilterParser
 
         return filters;
     }
+
 
     public static IQueryable<T> ApplyFilters<T>(IQueryable<T> source, List<FilterCriteria> filters)
     {
@@ -58,7 +61,7 @@ public static class FilterParser
 
         foreach (var filter in filters)
         {
-            var property = Expression.PropertyOrField(parameter, filter.PropertyName!);
+            Expression property = filter.PropertyPath.Aggregate((Expression)parameter, Expression.PropertyOrField);
 
             object? convertedValue = Convert.ChangeType(filter.Value, property.Type);
             var constant = Expression.Constant(convertedValue);

@@ -70,7 +70,7 @@ public class BookService : IBookService
         );
 
         if(objBookViewModel == null) {
-            return CommonHelper.CreateResponse(new ExpandoObject(), HttpStatusCode.NotFound, false, "Book not found.");
+            return CommonHelper.CreateResponse(new ExpandoObject(), HttpStatusCode.NotFound, false, ResponseMessages.NotFound.With("Book"));
         }
 
         var shapedBook = ObjectShaper.GetShapedObject(objBookViewModel, sFields);
@@ -175,7 +175,7 @@ public class BookService : IBookService
             return CommonHelper.CreateResponse(false, HttpStatusCode.OK, true, "Book Deleted successfully");
         }
 
-        return CommonHelper.CreateResponse(false, HttpStatusCode.NotFound, false, "Book not found.");
+        return CommonHelper.CreateResponse(false, HttpStatusCode.NotFound, false, ResponseMessages.NotFound.With("Book"));
     }
 
     public async Task<Response<bool>> DeleteListOfBooks(List<int> ids)
