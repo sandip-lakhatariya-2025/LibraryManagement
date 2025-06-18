@@ -35,22 +35,18 @@ public class BookRepository : BaseRepository<Book>, IBookRepository
 
         int nTotalRecords = await baseQuery.CountAsync();
 
-        Expression<Func<Book, Object>> keySelector = paginationFilter.SortField!.ToLower() switch
-        {
-            "bookname" => b => b.BookName,
-            "authername" => b => b.AutherName,
-            "price" => b => b.Price,
-            "tatalcopies" => b => b.TotalCopies,
-            _ => b => b.Id
-        };
+        string[] parts = paginationFilter.SortField!.Split('.');
+        var parameter = Expression.Parameter(typeof(Book), "x");
+        Expression sortProperty = parts.Aggregate((Expression)parameter, Expression.PropertyOrField);
+        var sortExpression = Expression.Lambda<Func<Book, object>>(Expression.Convert(sortProperty, typeof(object)), parameter);
 
         if (paginationFilter.IsAscending)
         {
-            baseQuery = baseQuery.OrderBy(keySelector);
+            baseQuery = baseQuery.OrderBy(sortExpression);
         }
         else
         {
-            baseQuery = baseQuery.OrderByDescending(keySelector);
+            baseQuery = baseQuery.OrderByDescending(sortExpression);
         }
 
         int skipCount = (paginationFilter.PageNumber - 1) * paginationFilter.PageSize;
