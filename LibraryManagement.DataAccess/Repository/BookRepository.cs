@@ -18,12 +18,11 @@ public class BookRepository : BaseRepository<Book>, IBookRepository
         _context = context;
     }
 
-    public async Task<(List<BookDetailsViewModel> Books, int TotalRecords)> GetPaginatedListAsync(PaginationFilter paginationFilter, IQueryCollection queryParams)
+    public async Task<(List<BookDetailsViewModel> Books, int TotalRecords)> GetPaginatedListAsync(PaginationFilter paginationFilter, List<FilterCriteria> lstFilters)
     {
         IQueryable<Book> baseQuery = _context.Books;
 
-        var filters = FilterParser.ParseFilters(queryParams);
-        baseQuery = FilterParser.ApplyFilters(baseQuery, filters);
+        baseQuery = FilterParser.ApplyFilters(baseQuery, lstFilters);
 
         if (!string.IsNullOrWhiteSpace(paginationFilter.SearchTerm))
         {

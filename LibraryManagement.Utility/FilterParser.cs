@@ -8,7 +8,20 @@ namespace LibraryManagement.Utility;
 
 public static class FilterParser
 {
-    public static List<FilterCriteria> ParseFilters(IQueryCollection? query)
+    private static readonly Dictionary<string, FilterOperator> OperatorMappings = new()
+    {
+        { "==", FilterOperator.Eq },
+        { "!=", FilterOperator.Neq },
+        { ">", FilterOperator.Gt },
+        { ">=", FilterOperator.Gteq },
+        { "<", FilterOperator.Lt },
+        { "<=", FilterOperator.Lteq },
+        { "Contains", FilterOperator.Like },
+        { "StartsWith", FilterOperator.Sw },
+        { "EndsWith", FilterOperator.Ew }
+    };
+
+    public static List<FilterCriteria> ParseFiltersV1(IQueryCollection? query)
     {
         var filters = new List<FilterCriteria>();
         if (query == null) return filters;
@@ -50,6 +63,51 @@ public static class FilterParser
         return filters;
     }
 
+    public static List<FilterCriteria> ParseFiltersV2(string? sFilters)
+    {
+        List<FilterCriteria> lstFilters = new List<FilterCriteria>();
+
+        if(string.IsNullOrEmpty(sFilters)) {
+            return lstFilters;
+        }
+
+        var andParts = sFilters!.Split(',', StringSplitOptions.RemoveEmptyEntries);
+
+        foreach (var andPart in andParts)
+        {
+            var orParts = andPart.Split(new[] { "||" }, StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (var orPart in orParts)
+            {
+                var trimmedPart = orPart.Trim();
+
+                var op = OperatorMappings.Keys.OrderByDescending(k => k.Length)
+                    .FirstOrDefault(o => trimmedPart.Contains(o));
+
+                if (op == null) continue;
+
+                var split = trimmedPart.Split(new[] { op }, 2, StringSplitOptions.RemoveEmptyEntries);
+                if (split.Length != 2) continue;
+
+                var prop = split[0].Trim();
+                var val = split[1].Trim().Trim('"');
+
+                var propPath = prop.Split('.').ToList();
+
+                bool isOrCondition = orPart != orParts[0] && orParts.Length > 1;
+
+                lstFilters.Add(new FilterCriteria
+                {
+                    PropertyPath = propPath,
+                    Operator = OperatorMappings[op],
+                    Value = val,
+                    IsOrCondition = isOrCondition
+                });
+            }
+        }
+
+        return lstFilters;
+    }
 
     public static IQueryable<T> ApplyFilters<T>(IQueryable<T> source, List<FilterCriteria> filters)
     {

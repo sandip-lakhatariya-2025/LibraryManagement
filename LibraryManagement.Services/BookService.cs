@@ -21,7 +21,28 @@ public class BookService : IBookService
 
     public async Task<PagedResponse<List<ExpandoObject>>> GetPaginatedListOfBooks(PaginationFilter paginationFilter, IQueryCollection queryParams, string? sFields)
     {
-        var (lstBooks, nTotalRecords) = await _bookRepository.GetPaginatedListAsync(paginationFilter, queryParams);
+        List<FilterCriteria> filters = FilterParser.ParseFiltersV1(queryParams);
+        var (lstBooks, nTotalRecords) = await _bookRepository.GetPaginatedListAsync(paginationFilter, filters);
+        int nTotalPages = (int)Math.Ceiling((double)nTotalRecords / paginationFilter.PageSize);
+
+        var shapedBooks = lstBooks.Select(book => ObjectShaper.GetShapedObject(book, sFields)).ToList();
+
+        return CommonHelper.CreatePagedResponse(
+            data: shapedBooks,
+            nPageNumber: paginationFilter.PageNumber,
+            nPageSize: paginationFilter.PageSize,
+            ntotalRecords: nTotalRecords,
+            ntotalPages: nTotalPages,
+            statusCode: HttpStatusCode.OK,
+            bIsSuccess: true,
+            sMessage: "Books retrieved successfully"
+        );
+    }
+
+    public async Task<PagedResponse<List<ExpandoObject>>> GetPaginatedListOfBooks(PaginationFilter paginationFilter, string? sFilters, string? sFields)
+    {
+        List<FilterCriteria> filters = FilterParser.ParseFiltersV2(sFilters);
+        var (lstBooks, nTotalRecords) = await _bookRepository.GetPaginatedListAsync(paginationFilter, filters);
         int nTotalPages = (int)Math.Ceiling((double)nTotalRecords / paginationFilter.PageSize);
 
         var shapedBooks = lstBooks.Select(book => ObjectShaper.GetShapedObject(book, sFields)).ToList();

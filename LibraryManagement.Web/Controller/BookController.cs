@@ -14,6 +14,7 @@ namespace LibraryManagement.Web.Controller;
 [Route("api/v{version:apiVersion}/[controller]")]
 [ApiVersion("1")]
 [ApiVersion("2")]
+[ApiVersion("3")]
 // [Authorize]
 public class BookController : ControllerBase
 {
@@ -90,11 +91,41 @@ public class BookController : ControllerBase
     [MapToApiVersion("2")]
     [HttpGet]
     [PermissionAuthorize(ClientEndpoint.Book, Permission.Read)]
-    public async Task<IActionResult> GetBooksV2(int id, [FromQuery] PaginationFilter paginationFilter, [FromQuery] Dictionary<string, string>? filters, string? fields)
+    public async Task<IActionResult> GetBooksV2(int id, [FromQuery] PaginationFilter paginationFilter, string? fields)
     {
         if (id <= 0)
         {
             var pagedResponse = await _bookService.GetPaginatedListOfBooks(paginationFilter, Request.Query, fields);
+            return pagedResponse.Succeeded
+                ? Ok(pagedResponse)
+                : StatusCode((int)pagedResponse.StatusCode, pagedResponse);
+        }
+
+        var singleResponse = await _bookService.GetBookByIdV2(id, fields);
+        return singleResponse.Succeeded
+            ? Ok(singleResponse)
+            : StatusCode((int)singleResponse.StatusCode, singleResponse);
+    }
+
+    /// <summary>
+    /// Retrieves a book record by Id or a paginated list of books.
+    /// </summary>
+    /// <remarks>
+    /// **Sample request body:**
+    ///
+    ///     GET /api/v3/Book/
+    ///     GET /api/v3/Book/1
+    /// 
+    /// </remarks>
+
+    [MapToApiVersion("3")]
+    [HttpGet]
+    [PermissionAuthorize(ClientEndpoint.Book, Permission.Read)]
+    public async Task<IActionResult> GetBooksV3(int id, [FromQuery] PaginationFilter paginationFilter, string? filters, string? fields)
+    {
+        if (id <= 0)
+        {
+            var pagedResponse = await _bookService.GetPaginatedListOfBooks(paginationFilter, filters, fields);
             return pagedResponse.Succeeded
                 ? Ok(pagedResponse)
                 : StatusCode((int)pagedResponse.StatusCode, pagedResponse);
