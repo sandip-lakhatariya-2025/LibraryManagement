@@ -42,6 +42,7 @@ public class BookService : IBookService
     public async Task<PagedResponse<List<ExpandoObject>>> GetPaginatedListOfBooks(PaginationFilter paginationFilter, string? sFilters, string? sFields)
     {
         List<FilterCriteria> filters = FilterParser.ParseFiltersV2(sFilters);
+        // List<List<FilterCriteria>> filters = FilterParser.ParseGroupedFilters(sFilters);
         var (lstBooks, nTotalRecords) = await _bookRepository.GetPaginatedListAsync(paginationFilter, filters);
         int nTotalPages = (int)Math.Ceiling((double)nTotalRecords / paginationFilter.PageSize);
 

@@ -6,8 +6,6 @@ namespace LibraryManagement.Models.ViewModels;
 
 public class FilterCriteria
 {
-    // public string? PropertyName { get; set; }
-    // public Expression PropertyName { get; set; }
     public IEnumerable<string> PropertyPath { get; set; } = Enumerable.Empty<string>();
     public FilterOperator Operator { get; set; }
     public string? Value { get; set; }

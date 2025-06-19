@@ -91,7 +91,7 @@ public class BookController : ControllerBase
     [MapToApiVersion("2")]
     [HttpGet]
     [PermissionAuthorize(ClientEndpoint.Book, Permission.Read)]
-    public async Task<IActionResult> GetBooksV2(int id, [FromQuery] PaginationFilter paginationFilter, string? fields)
+    public async Task<IActionResult> GetBooksV2(int id, [FromQuery] PaginationFilter paginationFilter, [FromQuery] Dictionary<string, string>? filters, string? fields)
     {
         if (id <= 0)
         {

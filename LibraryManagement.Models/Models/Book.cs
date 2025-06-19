@@ -26,6 +26,8 @@ public class Book
     [Required]
     public long PublisherId { get; set; }
 
+    public DateTime CreatedAt { get; set; }
+
     public virtual Publisher Publisher { get; set; } = null!;
 
     public virtual ICollection<CustomerBook> CustomerBooks { get; set; } = new List<CustomerBook>();

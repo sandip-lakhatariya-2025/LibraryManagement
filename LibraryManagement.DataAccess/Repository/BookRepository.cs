@@ -18,6 +18,7 @@ public class BookRepository : BaseRepository<Book>, IBookRepository
         _context = context;
     }
 
+    // public async Task<(List<BookDetailsViewModel> Books, int TotalRecords)> GetPaginatedListAsync(PaginationFilter paginationFilter, List<List<FilterCriteria>> lstFilters)
     public async Task<(List<BookDetailsViewModel> Books, int TotalRecords)> GetPaginatedListAsync(PaginationFilter paginationFilter, List<FilterCriteria> lstFilters)
     {
         IQueryable<Book> baseQuery = _context.Books;
@@ -59,6 +60,7 @@ public class BookRepository : BaseRepository<Book>, IBookRepository
                 Description = b.Description,
                 Price = b.Price,
                 TotalCopies = b.TotalCopies,
+                CreatedAt = b.CreatedAt,
                 PublisherId = b.PublisherId,
                 PublisherDetails = new PublisherViewModel
                 {
