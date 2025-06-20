@@ -42,7 +42,7 @@ public class BookController : ControllerBase
     public async Task<IActionResult> GetBooksV1([FromQuery] PaginationFilter paginationFilter, [FromQuery] Dictionary<string, string>? filters, string? fields)
     {
 
-        var response = await _bookService.GetPaginatedListOfBooks(paginationFilter, Request.Query, fields);
+        var response = await _bookService.GetPaginatedListOfBooksV1(paginationFilter, Request.Query, fields);
 
         if (response.Succeeded)
         {
@@ -95,7 +95,7 @@ public class BookController : ControllerBase
     {
         if (id <= 0)
         {
-            var pagedResponse = await _bookService.GetPaginatedListOfBooks(paginationFilter, Request.Query, fields);
+            var pagedResponse = await _bookService.GetPaginatedListOfBooksV1(paginationFilter, Request.Query, fields);
             return pagedResponse.Succeeded
                 ? Ok(pagedResponse)
                 : StatusCode((int)pagedResponse.StatusCode, pagedResponse);
@@ -125,7 +125,7 @@ public class BookController : ControllerBase
     {
         if (id <= 0)
         {
-            var pagedResponse = await _bookService.GetPaginatedListOfBooks(paginationFilter, filters, fields);
+            var pagedResponse = await _bookService.GetPaginatedListOfBooksV2(paginationFilter, filters, fields);
             return pagedResponse.Succeeded
                 ? Ok(pagedResponse)
                 : StatusCode((int)pagedResponse.StatusCode, pagedResponse);

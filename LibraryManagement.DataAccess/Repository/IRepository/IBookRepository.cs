@@ -7,6 +7,6 @@ namespace LibraryManagement.DataAccess.IRepository;
 
 public interface IBookRepository : IBaseRepository<Book>
 {
-    Task<(List<BookDetailsViewModel> Books, int TotalRecords)> GetPaginatedListAsync(PaginationFilter paginationFilter, List<FilterCriteria> lstFilters);
-    // Task<(List<BookDetailsViewModel> Books, int TotalRecords)> GetPaginatedListAsync(PaginationFilter paginationFilter, List<List<FilterCriteria>> lstFilters);
+    Task<(List<BookDetailsViewModel> Books, int TotalRecords)> GetPaginatedListAsyncV1(PaginationFilter paginationFilter, List<FilterCriteria> lstFilters);
+    Task<(List<BookDetailsViewModel> Books, int TotalRecords)> GetPaginatedListAsyncV2(PaginationFilter paginationFilter, List<List<FilterCriteria>> lstFilters);
 }

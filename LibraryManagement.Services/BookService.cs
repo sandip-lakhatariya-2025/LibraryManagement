@@ -19,10 +19,10 @@ public class BookService : IBookService
         _bookRepository = bookRepository;
     }
 
-    public async Task<PagedResponse<List<ExpandoObject>>> GetPaginatedListOfBooks(PaginationFilter paginationFilter, IQueryCollection queryParams, string? sFields)
+    public async Task<PagedResponse<List<ExpandoObject>>> GetPaginatedListOfBooksV1(PaginationFilter paginationFilter, IQueryCollection queryParams, string? sFields)
     {
         List<FilterCriteria> filters = FilterParser.ParseFiltersV1(queryParams);
-        var (lstBooks, nTotalRecords) = await _bookRepository.GetPaginatedListAsync(paginationFilter, filters);
+        var (lstBooks, nTotalRecords) = await _bookRepository.GetPaginatedListAsyncV1(paginationFilter, filters);
         int nTotalPages = (int)Math.Ceiling((double)nTotalRecords / paginationFilter.PageSize);
 
         var shapedBooks = lstBooks.Select(book => ObjectShaper.GetShapedObject(book, sFields)).ToList();
@@ -39,11 +39,10 @@ public class BookService : IBookService
         );
     }
 
-    public async Task<PagedResponse<List<ExpandoObject>>> GetPaginatedListOfBooks(PaginationFilter paginationFilter, string? sFilters, string? sFields)
+    public async Task<PagedResponse<List<ExpandoObject>>> GetPaginatedListOfBooksV2(PaginationFilter paginationFilter, string? sFilters, string? sFields)
     {
-        List<FilterCriteria> filters = FilterParser.ParseFiltersV2(sFilters);
-        // List<List<FilterCriteria>> filters = FilterParser.ParseGroupedFilters(sFilters);
-        var (lstBooks, nTotalRecords) = await _bookRepository.GetPaginatedListAsync(paginationFilter, filters);
+        List<List<FilterCriteria>> filters = FilterParser.ParseFiltersV2(sFilters);
+        var (lstBooks, nTotalRecords) = await _bookRepository.GetPaginatedListAsyncV2(paginationFilter, filters);
         int nTotalPages = (int)Math.Ceiling((double)nTotalRecords / paginationFilter.PageSize);
 
         var shapedBooks = lstBooks.Select(book => ObjectShaper.GetShapedObject(book, sFields)).ToList();
