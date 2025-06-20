@@ -5,8 +5,9 @@ using System.Security.Cryptography;
 using System.Text;
 using LibraryManagement.Common;
 using LibraryManagement.DataAccess.Repository.IRepository;
+using LibraryManagement.Models.Dtos.RequestDtos;
+using LibraryManagement.Models.Dtos.ResponseDtos;
 using LibraryManagement.Models.Models;
-using LibraryManagement.Models.ViewModels;
 using LibraryManagement.Services.IServices;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -23,33 +24,33 @@ public class AuthService : IAuthService
         _configuration = configuration;
     }
 
-    public async Task<Response<UserRegisterViewModel?>> RegisterUser(UserRegisterViewModel objUserRegisterViewModel)
+    public async Task<Response<RegistrationResultDto?>> RegisterUser(RegisterDto objRegisterDto)
     {
-        bool bIsExist = await _userRepository.ExistAsync(u => u.Email == objUserRegisterViewModel.Email);
+        bool bIsExist = await _userRepository.ExistAsync(u => u.Email == objRegisterDto.Email);
 
         if(bIsExist) {
-            return CommonHelper.CreateResponse<UserRegisterViewModel?>(null, HttpStatusCode.NotFound, false, "User with this email already exist.");
+            return CommonHelper.CreateResponse<RegistrationResultDto?>(null, HttpStatusCode.NotFound, false, "User with this email already exist.");
         }
 
         User objNewUser = new User {
-            Email = objUserRegisterViewModel.Email,
-            Firstname = objUserRegisterViewModel.Firstname,
-            Lastname = objUserRegisterViewModel.Lastname,
-            Password = HashPassword(objUserRegisterViewModel.Password),
-            Role = objUserRegisterViewModel.Role
+            Email = objRegisterDto.Email,
+            Firstname = objRegisterDto.Firstname,
+            Lastname = objRegisterDto.Lastname,
+            Password = HashPassword(objRegisterDto.Password),
+            Role = objRegisterDto.Role
         };
 
         await _userRepository.InsertAsync(objNewUser);
         await _userRepository.SaveChangesAsync();
 
-        UserRegisterViewModel? objAddedUser = await _userRepository.GetFirstOrDefaultAsync(
+        RegistrationResultDto? objAddedUser = await _userRepository.GetFirstOrDefaultAsync(
             u => u.Id == objNewUser.Id,
-            u => new UserRegisterViewModel {
+            u => new RegistrationResultDto {
                 Id = u.Id,
                 Email = u.Email,
                 Firstname = u.Firstname,
                 Lastname = u.Lastname,
-                Password = objUserRegisterViewModel.Password,
+                Password = objRegisterDto.Password,
                 Role = u.Role,
             }
         );
@@ -58,11 +59,11 @@ public class AuthService : IAuthService
 
     }
 
-    public async Task<Response<AuthResultViewModel>> LoginUser(UserLoginViewModel objUserLoginViewModel)
+    public async Task<Response<AuthResultDto>> LoginUser(LoginDto objLoginDto)
     {
         User? objExistingUser = await _userRepository.GetFirstOrDefaultAsync(
-            u => u.Email == objUserLoginViewModel.Email && 
-            u.Password == HashPassword(objUserLoginViewModel.Password),
+            u => u.Email == objLoginDto.Email && 
+            u.Password == HashPassword(objLoginDto.Password),
             u => new User {
                 Id = u.Id,
                 Email = u.Email,
@@ -71,10 +72,10 @@ public class AuthService : IAuthService
         );
 
         if(objExistingUser == null) {
-            return CommonHelper.CreateResponse(new AuthResultViewModel(), HttpStatusCode.NotFound, false, "Invalid credentials.");
+            return CommonHelper.CreateResponse(new AuthResultDto(), HttpStatusCode.NotFound, false, "Invalid credentials.");
         }
 
-        AuthResultViewModel? objAuthResult = new AuthResultViewModel{
+        AuthResultDto? objAuthResult = new AuthResultDto{
             AccessToken = GenerateJWTToken(objExistingUser)
         };
 

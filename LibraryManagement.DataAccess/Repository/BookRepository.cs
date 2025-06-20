@@ -1,8 +1,9 @@
 using System.Linq.Expressions;
 using LibraryManagement.DataAccess.Data;
 using LibraryManagement.DataAccess.IRepository;
+using LibraryManagement.Models.Dtos.RequestDtos;
+using LibraryManagement.Models.Dtos.ResponseDtos;
 using LibraryManagement.Models.Models;
-using LibraryManagement.Models.ViewModels;
 using LibraryManagement.Utility;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -18,7 +19,7 @@ public class BookRepository : BaseRepository<Book>, IBookRepository
         _context = context;
     }
 
-    public async Task<(List<BookDetailsViewModel> Books, int TotalRecords)> GetPaginatedListAsyncV1(PaginationFilter paginationFilter, List<FilterCriteria> lstFilters)
+    public async Task<(List<BookDetailsDto> Books, int TotalRecords)> GetPaginatedListAsyncV1(PaginationFilter paginationFilter, List<FilterCriteria> lstFilters)
     {
         IQueryable<Book> baseQuery = _context.Books;
 
@@ -50,8 +51,8 @@ public class BookRepository : BaseRepository<Book>, IBookRepository
 
         int skipCount = (paginationFilter.PageNumber - 1) * paginationFilter.PageSize;
 
-        List<BookDetailsViewModel> lstBooks = await baseQuery
-            .Select(b => new BookDetailsViewModel
+        List<BookDetailsDto> lstBooks = await baseQuery
+            .Select(b => new BookDetailsDto
             {
                 Id = b.Id,
                 BookName = b.BookName,
@@ -61,15 +62,15 @@ public class BookRepository : BaseRepository<Book>, IBookRepository
                 TotalCopies = b.TotalCopies,
                 CreatedAt = b.CreatedAt,
                 PublisherId = b.PublisherId,
-                PublisherDetails = new PublisherViewModel
+                PublisherDetails = new PublisherResultDto
                 {
                     Id = b.Publisher.Id,
                     Name = b.Publisher.Name,
                     Address = b.Publisher.Address
                 },
-                ReaderDetails = new ReaderDetailsViewModel
+                ReaderDetails = new ReaderDetailsDto
                 {
-                    CurrentReaders = b.CustomerBooks.Select(cb => new CustomerViewModel
+                    CurrentReaders = b.CustomerBooks.Select(cb => new CustomerResultDto
                     {
                         Id = cb.Customer.Id,
                         Name = cb.Customer.Name,
@@ -84,7 +85,7 @@ public class BookRepository : BaseRepository<Book>, IBookRepository
         return (lstBooks, nTotalRecords);
     }
 
-    public async Task<(List<BookDetailsViewModel> Books, int TotalRecords)> GetPaginatedListAsyncV2(PaginationFilter paginationFilter, List<List<FilterCriteria>> lstFilters)
+    public async Task<(List<BookDetailsDto> Books, int TotalRecords)> GetPaginatedListAsyncV2(PaginationFilter paginationFilter, List<List<FilterCriteria>> lstFilters)
     {
         IQueryable<Book> baseQuery = _context.Books;
 
@@ -116,8 +117,8 @@ public class BookRepository : BaseRepository<Book>, IBookRepository
 
         int skipCount = (paginationFilter.PageNumber - 1) * paginationFilter.PageSize;
 
-        List<BookDetailsViewModel> lstBooks = await baseQuery
-            .Select(b => new BookDetailsViewModel
+        List<BookDetailsDto> lstBooks = await baseQuery
+            .Select(b => new BookDetailsDto
             {
                 Id = b.Id,
                 BookName = b.BookName,
@@ -127,15 +128,15 @@ public class BookRepository : BaseRepository<Book>, IBookRepository
                 TotalCopies = b.TotalCopies,
                 CreatedAt = b.CreatedAt,
                 PublisherId = b.PublisherId,
-                PublisherDetails = new PublisherViewModel
+                PublisherDetails = new PublisherResultDto
                 {
                     Id = b.Publisher.Id,
                     Name = b.Publisher.Name,
                     Address = b.Publisher.Address
                 },
-                ReaderDetails = new ReaderDetailsViewModel
+                ReaderDetails = new ReaderDetailsDto
                 {
-                    CurrentReaders = b.CustomerBooks.Select(cb => new CustomerViewModel
+                    CurrentReaders = b.CustomerBooks.Select(cb => new CustomerResultDto
                     {
                         Id = cb.Customer.Id,
                         Name = cb.Customer.Name,

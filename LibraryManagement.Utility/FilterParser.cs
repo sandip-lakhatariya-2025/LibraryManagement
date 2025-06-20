@@ -1,8 +1,6 @@
 ﻿using System.Globalization;
 using System.Linq.Expressions;
 using LibraryManagement.Models.Enums;
-using LibraryManagement.Models.Models;
-using LibraryManagement.Models.ViewModels;
 using Microsoft.AspNetCore.Http;
 
 namespace LibraryManagement.Utility;

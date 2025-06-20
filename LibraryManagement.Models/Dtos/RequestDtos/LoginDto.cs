@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace LibraryManagement.Models.ViewModels;
+namespace LibraryManagement.Models.Dtos.RequestDtos;
 
-public class UserLoginViewModel
+public class LoginDto
 {
     [EmailAddress(ErrorMessage = "Please enter a valid email address.")]
     [Required(ErrorMessage = "Email is required.")]

@@ -1,11 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace LibraryManagement.Models.ViewModels;
+namespace LibraryManagement.Models.Dtos.RequestDtos;
 
-public class UserRegisterViewModel
+public class RegisterDto
 {
-    public long Id { get; set; }
-
     [Required(ErrorMessage = "Email is required.")]
     [EmailAddress(ErrorMessage = "Please enter a valid email address.")]
     [MaxLength(100, ErrorMessage = "Email must be less than or equal to 100 characters.")]

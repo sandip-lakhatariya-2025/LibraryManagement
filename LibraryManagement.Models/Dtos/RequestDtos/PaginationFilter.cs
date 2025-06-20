@@ -1,4 +1,4 @@
-namespace LibraryManagement.Models.ViewModels;
+namespace LibraryManagement.Models.Dtos.RequestDtos;
 
 public class PaginationFilter
 {

@@ -2,7 +2,7 @@ using System.Linq.Expressions;
 using LibraryManagement.Models.Enums;
 using LibraryManagement.Models.Models;
 
-namespace LibraryManagement.Models.ViewModels;
+namespace LibraryManagement.Utility;
 
 public class FilterCriteria
 {

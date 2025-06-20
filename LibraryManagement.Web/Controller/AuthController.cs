@@ -1,5 +1,5 @@
 using Asp.Versioning;
-using LibraryManagement.Models.ViewModels;
+using LibraryManagement.Models.Dtos.RequestDtos;
 using LibraryManagement.Services.IServices;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -21,7 +21,7 @@ public class AuthController : ControllerBase
     /// <summary>
     /// Register a new user.
     /// </summary>
-    /// <param name="objUserRegisterViewModel"></param>
+    /// <param name="objRegisterDto"></param>
     /// <remarks>
     /// **Sample request body:**
     ///
@@ -38,8 +38,8 @@ public class AuthController : ControllerBase
 
     [MapToApiVersion(2)]
     [HttpPost("Register")]
-    public async Task<IActionResult> Register(UserRegisterViewModel objUserRegisterViewModel) {
-        var response = await _authService.RegisterUser(objUserRegisterViewModel);
+    public async Task<IActionResult> Register(RegisterDto objRegisterDto) {
+        var response = await _authService.RegisterUser(objRegisterDto);
         return response.Succeeded 
             ? Ok(response)
             : StatusCode((int)response.StatusCode, response);
@@ -48,7 +48,7 @@ public class AuthController : ControllerBase
     /// <summary>
     /// Login to the system.
     /// </summary>
-    /// <param name="objUserLoginViewModel"></param>
+    /// <param name="objLoginDto"></param>
     /// <remarks>
     /// **Sample request body:**
     ///
@@ -62,8 +62,8 @@ public class AuthController : ControllerBase
 
     [MapToApiVersion(2)]
     [HttpPost("Login")]
-    public async Task<IActionResult> Login(UserLoginViewModel objUserLoginViewModel) {
-        var response = await _authService.LoginUser(objUserLoginViewModel);
+    public async Task<IActionResult> Login(LoginDto objLoginDto) {
+        var response = await _authService.LoginUser(objLoginDto);
         return response.Succeeded 
             ? Ok(response)
             : StatusCode((int)response.StatusCode, response);

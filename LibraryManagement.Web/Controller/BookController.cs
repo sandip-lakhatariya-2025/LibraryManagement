@@ -1,8 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using Asp.Versioning;
 using LibraryManagement.Common;
+using LibraryManagement.Models.Dtos.RequestDtos;
+using LibraryManagement.Models.Dtos.ResponseDtos;
 using LibraryManagement.Models.Enums;
-using LibraryManagement.Models.ViewModels;
 using LibraryManagement.Services;
 using LibraryManagement.Services.IServices;
 using Microsoft.AspNetCore.Authorization;
@@ -67,7 +68,7 @@ public class BookController : ControllerBase
     [PermissionAuthorize(ClientEndpoint.Book, Permission.Read)]
     public async Task<IActionResult> GetBookV1(long id)
     {
-        BooksViewModel? objBook = await _bookService.GetBookById(id);
+        BookResultDto? objBook = await _bookService.GetBookById(id);
 
         if (objBook == null)
         {
@@ -140,7 +141,7 @@ public class BookController : ControllerBase
     /// <summary>
     /// Add new book record.
     /// </summary>
-    /// <param name="objBookViewModel"></param>
+    /// <param name="objBookCreateDto"></param>
     /// <remarks>
     /// **Sample request body:**
     ///
@@ -161,9 +162,9 @@ public class BookController : ControllerBase
     [PermissionAuthorize(ClientEndpoint.Book, Permission.Write)]
     [Idempotent(cacheTimeInMinutes:60, headerKeyName: "X-Idempotency-Key", isEnabled: true)]
     [ProducesResponseType(200), ProducesResponseType(400)]
-    public async Task<IActionResult> AddBook(BooksViewModel objBookViewModel)
+    public async Task<IActionResult> AddBook(BookCreateDto objBookCreateDto)
     {
-        var response = await _bookService.AddBook(objBookViewModel);
+        var response = await _bookService.AddBook(objBookCreateDto);
 
         if (response.Succeeded)
         {
@@ -177,7 +178,7 @@ public class BookController : ControllerBase
     /// Updates a book by its ID.
     /// </summary>
     /// <param name="id">The ID of the book to update.</param>
-    /// <param name="objBookViewModel">The updated book details.</param>
+    /// <param name="objBookUpdateDto">The updated book details.</param>
     /// <remarks>
     /// **Sample request:**
     ///
@@ -197,15 +198,15 @@ public class BookController : ControllerBase
     [MapToApiVersion("2")]
     [HttpPut("{id}")]
     [PermissionAuthorize(ClientEndpoint.Book, Permission.Update)]
-    public async Task<IActionResult> UpdateBook(long id, BooksViewModel objBookViewModel)
+    public async Task<IActionResult> UpdateBook(long id, BookUpdateDto objBookUpdateDto)
     {
 
-        if (id != objBookViewModel.Id)
+        if (id != objBookUpdateDto.Id)
         {
             return BadRequest();
         }
 
-        var response = await _bookService.UpdateBook(objBookViewModel);
+        var response = await _bookService.UpdateBook(objBookUpdateDto);
 
         if (response.Succeeded)
         {
@@ -218,7 +219,7 @@ public class BookController : ControllerBase
     /// <summary>
     /// Updates multiple book records.
     /// </summary>
-    /// <param name="listBooksViewModels">A list of book view models to update.</param>
+    /// <param name="listBookUpdateDtos">A list of book view models to update.</param>
     /// <remarks>
     /// **Sample request body:**
     ///
@@ -248,10 +249,10 @@ public class BookController : ControllerBase
     [MapToApiVersion("2")]
     [HttpPut]
     [PermissionAuthorize(ClientEndpoint.Book, Permission.MultipleUpdate)]
-    public async Task<IActionResult> UpdateBooks(List<BooksViewModel> listBooksViewModels)
+    public async Task<IActionResult> UpdateBooks(List<BookUpdateDto> listBookUpdateDtos)
     {
 
-        var response = await _bookService.UpdateListOfBooks(listBooksViewModels);
+        var response = await _bookService.UpdateListOfBooks(listBookUpdateDtos);
 
         if (response.Succeeded)
         {

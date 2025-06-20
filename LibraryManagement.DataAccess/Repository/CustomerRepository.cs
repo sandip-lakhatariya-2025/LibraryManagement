@@ -1,7 +1,6 @@
 using LibraryManagement.DataAccess.Data;
 using LibraryManagement.DataAccess.Repository.IRepository;
 using LibraryManagement.Models.Models;
-using LibraryManagement.Models.ViewModels;
 using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagement.DataAccess.Repository;

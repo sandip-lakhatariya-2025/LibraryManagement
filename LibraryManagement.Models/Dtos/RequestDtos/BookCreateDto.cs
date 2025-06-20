@@ -1,11 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace LibraryManagement.Models.ViewModels;
+namespace LibraryManagement.Models.Dtos.RequestDtos;
 
-public class BooksViewModel
+public class BookCreateDto
 {
-    public long Id { get; set; }
-
     [Required(ErrorMessage = "Book name is required.")]
     [StringLength(100)]
     public string BookName { get; set; } = null!;

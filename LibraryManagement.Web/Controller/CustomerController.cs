@@ -1,7 +1,7 @@
 using Asp.Versioning;
 using LibraryManagement.Common;
+using LibraryManagement.Models.Dtos.RequestDtos;
 using LibraryManagement.Models.Enums;
-using LibraryManagement.Models.ViewModels;
 using LibraryManagement.Services;
 using LibraryManagement.Services.IServices;
 using Microsoft.AspNetCore.Authorization;
@@ -26,7 +26,7 @@ public class CustomerController : ControllerBase
     /// <summary>
     /// Adds a new customer.
     /// </summary>
-    /// <param name="customerViewModel">The customer details to add.</param>
+    /// <param name="objCustomerCreateDto">The customer details to add.</param>
     /// <remarks>
     /// **Sample request body:**
     ///
@@ -42,9 +42,9 @@ public class CustomerController : ControllerBase
     [HttpPost]
     [PermissionAuthorize(ClientEndpoint.Customer, Permission.Write)]
     [Idempotent]
-    public async Task<IActionResult> AddCustomer(CustomerViewModel customerViewModel)
+    public async Task<IActionResult> AddCustomer(CustomerCreateDto objCustomerCreateDto)
     {
-        var response = await _customerService.AddCustomer(customerViewModel);
+        var response = await _customerService.AddCustomer(objCustomerCreateDto);
 
         if (response.Succeeded)
         {

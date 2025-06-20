@@ -1,12 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace LibraryManagement.Models.ViewModels;
+namespace LibraryManagement.Models.Dtos.RequestDtos;
 
-public class CustomerViewModel
+public class CustomerCreateDto
 {
-    [Key]
-    public long Id { get; set; }
-
     [Required(ErrorMessage = "Name is required.")]
     [StringLength(100)]
     public string Name { get; set; } = null!;

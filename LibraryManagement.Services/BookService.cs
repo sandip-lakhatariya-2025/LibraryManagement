@@ -2,8 +2,9 @@ using System.Dynamic;
 using System.Net;
 using LibraryManagement.Common;
 using LibraryManagement.DataAccess.IRepository;
+using LibraryManagement.Models.Dtos.RequestDtos;
+using LibraryManagement.Models.Dtos.ResponseDtos;
 using LibraryManagement.Models.Models;
-using LibraryManagement.Models.ViewModels;
 using LibraryManagement.Services.IServices;
 using LibraryManagement.Utility;
 using Microsoft.AspNetCore.Http;
@@ -59,11 +60,11 @@ public class BookService : IBookService
         );
     }
 
-    public async Task<BooksViewModel?> GetBookById(long id)
+    public async Task<BookResultDto?> GetBookById(long id)
     {
         return await _bookRepository.GetFirstOrDefaultAsync(
             b => b.Id == id, 
-            b => new BooksViewModel {
+            b => new BookResultDto {
                 Id = b.Id,
                 BookName = b.BookName,
                 AutherName = b.AutherName,
@@ -77,9 +78,9 @@ public class BookService : IBookService
 
     public async Task<Response<ExpandoObject>> GetBookByIdV2(long id, string? sFields)
     {
-        BooksViewModel? objBookViewModel = await _bookRepository.GetFirstOrDefaultAsync(
+        BookResultDto? objBookDto = await _bookRepository.GetFirstOrDefaultAsync(
             b => b.Id == id, 
-            b => new BooksViewModel {
+            b => new BookResultDto {
                 Id = b.Id,
                 BookName = b.BookName,
                 AutherName = b.AutherName,
@@ -90,88 +91,88 @@ public class BookService : IBookService
             }
         );
 
-        if(objBookViewModel == null) {
+        if(objBookDto == null) {
             return CommonHelper.CreateResponse(new ExpandoObject(), HttpStatusCode.NotFound, false, ResponseMessages.NotFound.With("Book"));
         }
 
-        var shapedBook = ObjectShaper.GetShapedObject(objBookViewModel, sFields);
+        var shapedBook = ObjectShaper.GetShapedObject(objBookDto, sFields);
 
         return CommonHelper.CreateResponse(shapedBook, HttpStatusCode.OK, true, $"Book details fetch successfully.");
     }
 
-    public async Task<Response<BooksViewModel?>> AddBook(BooksViewModel objBookViewModel)
+    public async Task<Response<BookResultDto?>> AddBook(BookCreateDto objBookCreateDto)
     {
         Book objNewBook = new Book
         {
-            BookName = objBookViewModel.BookName,
-            AutherName = objBookViewModel.AutherName,
-            Description = objBookViewModel.Description,
-            Price = objBookViewModel.Price,
-            TotalCopies = objBookViewModel.TotalCopies,
-            PublisherId = objBookViewModel.PublisherId
+            BookName = objBookCreateDto.BookName,
+            AutherName = objBookCreateDto.AutherName,
+            Description = objBookCreateDto.Description,
+            Price = objBookCreateDto.Price,
+            TotalCopies = objBookCreateDto.TotalCopies,
+            PublisherId = objBookCreateDto.PublisherId
         };
 
         await _bookRepository.InsertAsync(objNewBook);
         await _bookRepository.SaveChangesAsync();
 
-        BooksViewModel? addedBook = await GetBookById(objNewBook.Id);
+        BookResultDto? addedBook = await GetBookById(objNewBook.Id);
         return CommonHelper.CreateResponse(addedBook, HttpStatusCode.OK, true, "Book added successfully.");
     }
 
-    public async Task<Response<BooksViewModel?>> UpdateBook(BooksViewModel objBookViewModel)
+    public async Task<Response<BookResultDto?>> UpdateBook(BookUpdateDto objBookUpdateDto)
     {
-        Book? objExistingBook = await _bookRepository.GetFirstOrDefaultAsync(b => b.Id == objBookViewModel.Id);
+        Book? objExistingBook = await _bookRepository.GetFirstOrDefaultAsync(b => b.Id == objBookUpdateDto.Id);
 
         if (objExistingBook != null)
         {
-            objExistingBook.BookName = objBookViewModel.BookName;
-            objExistingBook.AutherName = objBookViewModel.AutherName;
-            objExistingBook.Description = objBookViewModel.Description;
-            objExistingBook.Price = objBookViewModel.Price;
-            objExistingBook.TotalCopies = objBookViewModel.TotalCopies;
+            objExistingBook.BookName = objBookUpdateDto.BookName;
+            objExistingBook.AutherName = objBookUpdateDto.AutherName;
+            objExistingBook.Description = objBookUpdateDto.Description;
+            objExistingBook.Price = objBookUpdateDto.Price;
+            objExistingBook.TotalCopies = objBookUpdateDto.TotalCopies;
 
             _bookRepository.UpdateEntity(objExistingBook);
             await _bookRepository.SaveChangesAsync();
 
-            BooksViewModel? updatedBook = await GetBookById(objExistingBook.Id);
+            BookResultDto? updatedBook = await GetBookById(objExistingBook.Id);
 
             return CommonHelper.CreateResponse(updatedBook, HttpStatusCode.OK, true, "Book Updated successfully");
         }
 
-        return CommonHelper.CreateResponse<BooksViewModel?>(null, HttpStatusCode.NotFound, false, "Book not found.");
+        return CommonHelper.CreateResponse<BookResultDto?>(null, HttpStatusCode.NotFound, false, "Book not found.");
     }
 
-    public async Task<Response<List<BooksViewModel>>> UpdateListOfBooks(List<BooksViewModel> lstBooksViewModels)
+    public async Task<Response<List<BookResultDto>>> UpdateListOfBooks(List<BookUpdateDto> lstBookUpdateDtos)
     {
         List<Book> listBooks = new List<Book>();
 
-        foreach (var objBookViewModel in lstBooksViewModels)
+        foreach (var objBookDto in lstBookUpdateDtos)
         {
-            Book? objExistingBook = await _bookRepository.GetFirstOrDefaultAsync(b => b.Id == objBookViewModel.Id);
+            Book? objExistingBook = await _bookRepository.GetFirstOrDefaultAsync(b => b.Id == objBookDto.Id);
 
             if (objExistingBook != null)
             {
-                objExistingBook.BookName = objBookViewModel.BookName;
-                objExistingBook.AutherName = objBookViewModel.AutherName;
-                objExistingBook.Description = objBookViewModel.Description;
-                objExistingBook.Price = objBookViewModel.Price;
-                objExistingBook.TotalCopies = objBookViewModel.TotalCopies;
+                objExistingBook.BookName = objBookDto.BookName;
+                objExistingBook.AutherName = objBookDto.AutherName;
+                objExistingBook.Description = objBookDto.Description;
+                objExistingBook.Price = objBookDto.Price;
+                objExistingBook.TotalCopies = objBookDto.TotalCopies;
 
                 listBooks.Add(objExistingBook);
             }
             else
             {
-                return CommonHelper.CreateResponse(new List<BooksViewModel>(), HttpStatusCode.NotFound, false, "Some books are not found.");
+                return CommonHelper.CreateResponse(new List<BookResultDto>(), HttpStatusCode.NotFound, false, "Some books are not found.");
             }
         }
 
         _bookRepository.UpdateList(listBooks);
         await _bookRepository.SaveChangesAsync();
 
-        List<long> lstIds = lstBooksViewModels.Select(b => b.Id).ToList();
-        List<BooksViewModel> updatedBooks = await _bookRepository.GetListAsync(
+        List<long> lstIds = lstBookUpdateDtos.Select(b => b.Id).ToList();
+        List<BookResultDto> updatedBooks = await _bookRepository.GetListAsync(
             b => lstIds.Contains(b.Id),
-            b => new BooksViewModel {
+            b => new BookResultDto {
                 Id = b.Id,
                 BookName = b.BookName,
                 AutherName = b.AutherName,

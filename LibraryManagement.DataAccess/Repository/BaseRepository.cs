@@ -1,7 +1,7 @@
 using System.Linq.Expressions;
 using LibraryManagement.DataAccess.Data;
 using LibraryManagement.DataAccess.Repository.IRepository;
-using LibraryManagement.Models.ViewModels;
+using LibraryManagement.Models.Dtos.RequestDtos;
 using Microsoft.EntityFrameworkCore;
 
 namespace LibraryManagement.DataAccess.Repository;
