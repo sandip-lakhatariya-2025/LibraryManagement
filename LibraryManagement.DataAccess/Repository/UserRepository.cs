@@ -6,9 +6,5 @@ namespace LibraryManagement.DataAccess.Repository;
 
 public class UserRepository : BaseRepository<User>, IUserRepository
 {
-    private readonly ApplicationDbContext _context;
-
-    public UserRepository(ApplicationDbContext context) : base(context) {
-        _context = context;
-    }
+    public UserRepository(ApplicationDbContext context) : base(context) { }
 }

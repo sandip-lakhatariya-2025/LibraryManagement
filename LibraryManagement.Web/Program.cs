@@ -2,7 +2,9 @@ using System.Reflection;
 using System.Text.Json;
 using Asp.Versioning;
 using Asp.Versioning.ApiExplorer;
+using AutoMapper;
 using LibraryManagement.Common;
+using LibraryManagement.Common.MappingProfiles;
 using LibraryManagement.DataAccess.Data;
 using LibraryManagement.Services;
 using LibraryManagement.Web;
@@ -51,6 +53,8 @@ try
     builder.Services.AddDistributedMemoryCache();
 
     builder.Services.AddAuthorization();
+    
+    builder.Services.AddAutoMapper(typeof(BookMappingProfile).Assembly);
 
     builder.Services.AddControllers()
         .AddJsonOptions(options =>

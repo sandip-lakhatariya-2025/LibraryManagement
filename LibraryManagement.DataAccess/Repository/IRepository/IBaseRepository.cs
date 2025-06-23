@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using AutoMapper;
 using LibraryManagement.Models.Dtos.RequestDtos;
 
 namespace LibraryManagement.DataAccess.Repository.IRepository;
@@ -11,6 +12,11 @@ public interface IBaseRepository<T> where T : class
     Task<TResult?> GetFirstOrDefaultAsync<TResult>(
         Expression<Func<T, bool>> expFilter, 
         Expression<Func<T, TResult>> expSelector
+    );
+
+    Task<TResult?> GetFirstOrDefaultAsync<TResult>(
+        Expression<Func<T, bool>> filter,
+        IConfigurationProvider mapperConfig
     );
 
     Task<List<TResult>> GetPaginatedListAsync<TResult>(

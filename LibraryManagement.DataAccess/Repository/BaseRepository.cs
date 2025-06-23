@@ -1,4 +1,6 @@
 using System.Linq.Expressions;
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using LibraryManagement.DataAccess.Data;
 using LibraryManagement.DataAccess.Repository.IRepository;
 using LibraryManagement.Models.Dtos.RequestDtos;
@@ -25,6 +27,16 @@ public class BaseRepository<T> : IBaseRepository<T> where T : class
     public async Task<TResult?> GetFirstOrDefaultAsync<TResult>(Expression<Func<T, bool>> expFilter, Expression<Func<T, TResult>> expSelector)
     {
         return await _dbSet.Where(expFilter).Select(expSelector).FirstOrDefaultAsync();
+    }
+
+    public async Task<TResult?> GetFirstOrDefaultAsync<TResult>(
+        Expression<Func<T, bool>> filter,
+        IConfigurationProvider mapperConfig)
+    {
+        return await _dbSet
+            .Where(filter)
+            .ProjectTo<TResult>(mapperConfig)
+            .FirstOrDefaultAsync();
     }
 
     public Task<List<TResult>> GetPaginatedListAsync<TResult>(

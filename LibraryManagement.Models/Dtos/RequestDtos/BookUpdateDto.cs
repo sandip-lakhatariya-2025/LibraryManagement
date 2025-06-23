@@ -28,6 +28,4 @@ public class BookUpdateDto
 
     [Required(ErrorMessage = "PublisherId is required.")]
     public long PublisherId { get; set; }
-
-    public DateTime CreatedAt { get; set; }
 }

@@ -3,6 +3,7 @@
     <ProjectReference Include="..\LibraryManagement.Models\LibraryManagement.Models.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="7.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
   </ItemGroup>
   <PropertyGroup>

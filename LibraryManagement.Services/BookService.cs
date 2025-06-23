@@ -1,5 +1,6 @@
 using System.Dynamic;
 using System.Net;
+using AutoMapper;
 using LibraryManagement.Common;
 using LibraryManagement.DataAccess.IRepository;
 using LibraryManagement.Models.Dtos.RequestDtos;
@@ -14,10 +15,12 @@ namespace LibraryManagement.Services;
 public class BookService : IBookService
 {
     private readonly IBookRepository _bookRepository;
+    private readonly IMapper _mapper;
 
-    public BookService(IBookRepository bookRepository)
+    public BookService(IBookRepository bookRepository, IMapper mapper)
     {
         _bookRepository = bookRepository;
+        _mapper = mapper;
     }
 
     public async Task<PagedResponse<List<ExpandoObject>>> GetPaginatedListOfBooksV1(PaginationFilter paginationFilter, IQueryCollection queryParams, string? sFields)
@@ -62,18 +65,20 @@ public class BookService : IBookService
 
     public async Task<BookResultDto?> GetBookById(long id)
     {
-        return await _bookRepository.GetFirstOrDefaultAsync(
-            b => b.Id == id, 
-            b => new BookResultDto {
-                Id = b.Id,
-                BookName = b.BookName,
-                AutherName = b.AutherName,
-                Description = b.Description,
-                Price = b.Price,
-                TotalCopies = b.TotalCopies,
-                PublisherId = b.PublisherId
-            }
-        );
+        // return await _bookRepository.GetFirstOrDefaultAsync(
+        //     b => b.Id == id, 
+        //     b => new BookResultDto {
+        //         Id = b.Id,
+        //         BookName = b.BookName,
+        //         AutherName = b.AutherName,
+        //         Description = b.Description,
+        //         Price = b.Price,
+        //         TotalCopies = b.TotalCopies,
+        //         PublisherId = b.PublisherId
+        //     }
+        // );
+
+        return await _bookRepository.GetFirstOrDefaultAsync<BookResultDto>(b => b.Id == id, _mapper.ConfigurationProvider);
     }
 
     public async Task<Response<ExpandoObject>> GetBookByIdV2(long id, string? sFields)
@@ -102,15 +107,17 @@ public class BookService : IBookService
 
     public async Task<Response<BookResultDto?>> AddBook(BookCreateDto objBookCreateDto)
     {
-        Book objNewBook = new Book
-        {
-            BookName = objBookCreateDto.BookName,
-            AutherName = objBookCreateDto.AutherName,
-            Description = objBookCreateDto.Description,
-            Price = objBookCreateDto.Price,
-            TotalCopies = objBookCreateDto.TotalCopies,
-            PublisherId = objBookCreateDto.PublisherId
-        };
+        // Book objNewBook = new Book
+        // {
+        //     BookName = objBookCreateDto.BookName,
+        //     AutherName = objBookCreateDto.AutherName,
+        //     Description = objBookCreateDto.Description,
+        //     Price = objBookCreateDto.Price,
+        //     TotalCopies = objBookCreateDto.TotalCopies,
+        //     PublisherId = objBookCreateDto.PublisherId
+        // };
+
+        Book objNewBook = _mapper.Map<Book>(objBookCreateDto);
 
         await _bookRepository.InsertAsync(objNewBook);
         await _bookRepository.SaveChangesAsync();
