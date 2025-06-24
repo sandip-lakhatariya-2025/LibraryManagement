@@ -51,10 +51,14 @@ public class AuthService : IAuthService
 
     public async Task<Response<AuthResultDto>> LoginUser(LoginDto objLoginDto)
     {
-        User? objExistingUser = await _userRepository.GetFirstOrDefaultAsync<User>(
+        User? objExistingUser = await _userRepository.GetFirstOrDefaultAsync(
             u => u.Email == objLoginDto.Email && 
             u.Password == HashPassword(objLoginDto.Password),
-            _mapper.ConfigurationProvider
+            u => new User {
+                Id = u.Id,
+                Email = u.Email,
+                Role = u.Role
+            }
         );
 
         if(objExistingUser == null) {

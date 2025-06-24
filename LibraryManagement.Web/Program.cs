@@ -55,11 +55,7 @@ try
 
     builder.Services.AddAuthorization();
     
-    builder.Services.AddAutoMapper(
-        typeof(BookMappingProfile).Assembly,
-        typeof(CustomerMappingProfile).Assembly,
-        typeof(UserMappingProfile).Assembly
-    );
+    builder.Services.AddAutoMapper(typeof(MapperConfig));
 
     builder.Services.AddControllers()
         .AddJsonOptions(options =>
