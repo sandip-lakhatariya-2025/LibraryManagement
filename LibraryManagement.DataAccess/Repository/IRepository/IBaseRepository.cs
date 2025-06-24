@@ -30,6 +30,11 @@ public interface IBaseRepository<T> where T : class
         Expression<Func<T, TResult>> expSelector
     );
 
+    Task<List<TResult>> GetListAsync<TResult>(
+        Expression<Func<T, bool>> expFilter,
+        IConfigurationProvider mapperConfig
+    );
+
     Task InsertAsync(T objEntity);
 
     Task InsertListAsync(List<T> lstEntity);

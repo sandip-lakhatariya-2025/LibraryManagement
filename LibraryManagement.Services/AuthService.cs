@@ -3,6 +3,7 @@ using System.Net;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using AutoMapper;
 using LibraryManagement.Common;
 using LibraryManagement.DataAccess.Repository.IRepository;
 using LibraryManagement.Models.Dtos.RequestDtos;
@@ -19,9 +20,11 @@ public class AuthService : IAuthService
 
     private readonly IUserRepository _userRepository;
     private readonly IConfiguration _configuration;
-    public AuthService(IUserRepository userRepository, IConfiguration configuration) {
+    private readonly IMapper _mapper;
+    public AuthService(IUserRepository userRepository, IConfiguration configuration, IMapper mapper) {
         _userRepository = userRepository;
         _configuration = configuration;
+        _mapper = mapper;
     }
 
     public async Task<Response<RegistrationResultDto?>> RegisterUser(RegisterDto objRegisterDto)
@@ -29,30 +32,17 @@ public class AuthService : IAuthService
         bool bIsExist = await _userRepository.ExistAsync(u => u.Email == objRegisterDto.Email);
 
         if(bIsExist) {
-            return CommonHelper.CreateResponse<RegistrationResultDto?>(null, HttpStatusCode.NotFound, false, "User with this email already exist.");
+            return CommonHelper.CreateResponse<RegistrationResultDto?>(null, HttpStatusCode.BadRequest, true, "User with this email already exist.");
         }
 
-        User objNewUser = new User {
-            Email = objRegisterDto.Email,
-            Firstname = objRegisterDto.Firstname,
-            Lastname = objRegisterDto.Lastname,
-            Password = HashPassword(objRegisterDto.Password),
-            Role = objRegisterDto.Role
-        };
+        User objNewUser = _mapper.Map<User>(objRegisterDto);
 
         await _userRepository.InsertAsync(objNewUser);
         await _userRepository.SaveChangesAsync();
 
-        RegistrationResultDto? objAddedUser = await _userRepository.GetFirstOrDefaultAsync(
+        RegistrationResultDto? objAddedUser = await _userRepository.GetFirstOrDefaultAsync<RegistrationResultDto>(
             u => u.Id == objNewUser.Id,
-            u => new RegistrationResultDto {
-                Id = u.Id,
-                Email = u.Email,
-                Firstname = u.Firstname,
-                Lastname = u.Lastname,
-                Password = objRegisterDto.Password,
-                Role = u.Role,
-            }
+            _mapper.ConfigurationProvider
         );
 
         return CommonHelper.CreateResponse(objAddedUser, HttpStatusCode.OK, true, "User has been added successfully.");
@@ -61,14 +51,10 @@ public class AuthService : IAuthService
 
     public async Task<Response<AuthResultDto>> LoginUser(LoginDto objLoginDto)
     {
-        User? objExistingUser = await _userRepository.GetFirstOrDefaultAsync(
+        User? objExistingUser = await _userRepository.GetFirstOrDefaultAsync<User>(
             u => u.Email == objLoginDto.Email && 
             u.Password == HashPassword(objLoginDto.Password),
-            u => new User {
-                Id = u.Id,
-                Email = u.Email,
-                Role = u.Role
-            }
+            _mapper.ConfigurationProvider
         );
 
         if(objExistingUser == null) {

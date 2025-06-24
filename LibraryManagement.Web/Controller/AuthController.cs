@@ -1,4 +1,5 @@
 using Asp.Versioning;
+using LibraryManagement.Common;
 using LibraryManagement.Models.Dtos.RequestDtos;
 using LibraryManagement.Services.IServices;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -38,6 +39,7 @@ public class AuthController : ControllerBase
 
     [MapToApiVersion(2)]
     [HttpPost("Register")]
+    [Idempotent(cacheTimeInMinutes:60, headerKeyName: "X-Idempotency-Key", isEnabled: true)]
     public async Task<IActionResult> Register(RegisterDto objRegisterDto) {
         var response = await _authService.RegisterUser(objRegisterDto);
         return response.Succeeded 
@@ -62,6 +64,7 @@ public class AuthController : ControllerBase
 
     [MapToApiVersion(2)]
     [HttpPost("Login")]
+    [Idempotent(cacheTimeInMinutes:60, headerKeyName: "X-Idempotency-Key", isEnabled: true)]
     public async Task<IActionResult> Login(LoginDto objLoginDto) {
         var response = await _authService.LoginUser(objLoginDto);
         return response.Succeeded 

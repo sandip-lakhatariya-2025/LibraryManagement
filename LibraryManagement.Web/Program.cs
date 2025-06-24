@@ -7,6 +7,7 @@ using LibraryManagement.Common;
 using LibraryManagement.Common.MappingProfiles;
 using LibraryManagement.DataAccess.Data;
 using LibraryManagement.Services;
+using LibraryManagement.Utility.MappingProfiles;
 using LibraryManagement.Web;
 using LibraryManagement.Web.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -54,7 +55,11 @@ try
 
     builder.Services.AddAuthorization();
     
-    builder.Services.AddAutoMapper(typeof(BookMappingProfile).Assembly);
+    builder.Services.AddAutoMapper(
+        typeof(BookMappingProfile).Assembly,
+        typeof(CustomerMappingProfile).Assembly,
+        typeof(UserMappingProfile).Assembly
+    );
 
     builder.Services.AddControllers()
         .AddJsonOptions(options =>

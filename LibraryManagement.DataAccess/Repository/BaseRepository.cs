@@ -49,6 +49,13 @@ public class BaseRepository<T> : IBaseRepository<T> where T : class
 
     public async Task<List<TResult>> GetListAsync<TResult>(
         Expression<Func<T, bool>> expFilter,
+        IConfigurationProvider mapperConfig)
+    {
+        return await _dbSet.Where(expFilter).ProjectTo<TResult>(mapperConfig).ToListAsync();
+    }
+
+        public async Task<List<TResult>> GetListAsync<TResult>(
+        Expression<Func<T, bool>> expFilter,
         Expression<Func<T, TResult>> expSelector)
     {
         return await _dbSet.Where(expFilter).Select(expSelector).ToListAsync();

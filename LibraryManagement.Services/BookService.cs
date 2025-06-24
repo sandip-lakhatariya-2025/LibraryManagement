@@ -65,36 +65,12 @@ public class BookService : IBookService
 
     public async Task<BookResultDto?> GetBookById(long id)
     {
-        // return await _bookRepository.GetFirstOrDefaultAsync(
-        //     b => b.Id == id, 
-        //     b => new BookResultDto {
-        //         Id = b.Id,
-        //         BookName = b.BookName,
-        //         AutherName = b.AutherName,
-        //         Description = b.Description,
-        //         Price = b.Price,
-        //         TotalCopies = b.TotalCopies,
-        //         PublisherId = b.PublisherId
-        //     }
-        // );
-
         return await _bookRepository.GetFirstOrDefaultAsync<BookResultDto>(b => b.Id == id, _mapper.ConfigurationProvider);
     }
 
     public async Task<Response<ExpandoObject>> GetBookByIdV2(long id, string? sFields)
     {
-        BookResultDto? objBookDto = await _bookRepository.GetFirstOrDefaultAsync(
-            b => b.Id == id, 
-            b => new BookResultDto {
-                Id = b.Id,
-                BookName = b.BookName,
-                AutherName = b.AutherName,
-                Description = b.Description,
-                Price = b.Price,
-                TotalCopies = b.TotalCopies,
-                PublisherId = b.PublisherId
-            }
-        );
+        BookResultDto? objBookDto = await _bookRepository.GetFirstOrDefaultAsync<BookResultDto>(b => b.Id == id, _mapper.ConfigurationProvider);
 
         if(objBookDto == null) {
             return CommonHelper.CreateResponse(new ExpandoObject(), HttpStatusCode.NotFound, false, ResponseMessages.NotFound.With("Book"));
@@ -107,16 +83,6 @@ public class BookService : IBookService
 
     public async Task<Response<BookResultDto?>> AddBook(BookCreateDto objBookCreateDto)
     {
-        // Book objNewBook = new Book
-        // {
-        //     BookName = objBookCreateDto.BookName,
-        //     AutherName = objBookCreateDto.AutherName,
-        //     Description = objBookCreateDto.Description,
-        //     Price = objBookCreateDto.Price,
-        //     TotalCopies = objBookCreateDto.TotalCopies,
-        //     PublisherId = objBookCreateDto.PublisherId
-        // };
-
         Book objNewBook = _mapper.Map<Book>(objBookCreateDto);
 
         await _bookRepository.InsertAsync(objNewBook);
@@ -132,11 +98,7 @@ public class BookService : IBookService
 
         if (objExistingBook != null)
         {
-            objExistingBook.BookName = objBookUpdateDto.BookName;
-            objExistingBook.AutherName = objBookUpdateDto.AutherName;
-            objExistingBook.Description = objBookUpdateDto.Description;
-            objExistingBook.Price = objBookUpdateDto.Price;
-            objExistingBook.TotalCopies = objBookUpdateDto.TotalCopies;
+            _mapper.Map(objBookUpdateDto, objExistingBook);
 
             _bookRepository.UpdateEntity(objExistingBook);
             await _bookRepository.SaveChangesAsync();
@@ -153,17 +115,13 @@ public class BookService : IBookService
     {
         List<Book> listBooks = new List<Book>();
 
-        foreach (var objBookDto in lstBookUpdateDtos)
+        foreach (var objBookUpdateDto in lstBookUpdateDtos)
         {
-            Book? objExistingBook = await _bookRepository.GetFirstOrDefaultAsync(b => b.Id == objBookDto.Id);
+            Book? objExistingBook = await _bookRepository.GetFirstOrDefaultAsync(b => b.Id == objBookUpdateDto.Id);
 
             if (objExistingBook != null)
             {
-                objExistingBook.BookName = objBookDto.BookName;
-                objExistingBook.AutherName = objBookDto.AutherName;
-                objExistingBook.Description = objBookDto.Description;
-                objExistingBook.Price = objBookDto.Price;
-                objExistingBook.TotalCopies = objBookDto.TotalCopies;
+                _mapper.Map(objBookUpdateDto, objExistingBook);
 
                 listBooks.Add(objExistingBook);
             }
@@ -177,16 +135,9 @@ public class BookService : IBookService
         await _bookRepository.SaveChangesAsync();
 
         List<long> lstIds = lstBookUpdateDtos.Select(b => b.Id).ToList();
-        List<BookResultDto> updatedBooks = await _bookRepository.GetListAsync(
+        List<BookResultDto> updatedBooks = await _bookRepository.GetListAsync<BookResultDto>(
             b => lstIds.Contains(b.Id),
-            b => new BookResultDto {
-                Id = b.Id,
-                BookName = b.BookName,
-                AutherName = b.AutherName,
-                Description = b.Description,
-                Price = b.Price,
-                TotalCopies = b.TotalCopies
-            }    
+            _mapper.ConfigurationProvider
         );
 
         return CommonHelper.CreateResponse(updatedBooks, HttpStatusCode.OK, true, "All selected Books has been updated successfully");

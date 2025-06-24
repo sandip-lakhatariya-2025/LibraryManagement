@@ -9,7 +9,7 @@ public class BookMappingProfile : Profile
 {
     public BookMappingProfile() {
         CreateMap<BookCreateDto, Book>();
-        CreateMap<Book, BookUpdateDto>();
+        CreateMap<BookUpdateDto, Book>();
         CreateMap<Book, BookResultDto>();
     }
 }
