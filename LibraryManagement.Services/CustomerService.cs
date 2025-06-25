@@ -11,12 +11,12 @@ namespace LibraryManagement.Services;
 
 public class CustomerService : ICustomerService
 {
-    private readonly ICustomerRepository _customerRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
-    public CustomerService(ICustomerRepository customerRepository, IMapper mapper)
+    public CustomerService(IUnitOfWork unitOfWork, IMapper mapper)
     {
-        _customerRepository = customerRepository;
+        _unitOfWork = unitOfWork;
         _mapper = mapper;
     }
     
@@ -24,8 +24,8 @@ public class CustomerService : ICustomerService
     {
         Customer objNewCustomer = _mapper.Map<Customer>(objCustomerCreateDto);
 
-        await _customerRepository.InsertAsync(objNewCustomer);
-        await _customerRepository.SaveChangesAsync();
+        await _unitOfWork.Customers.InsertAsync(objNewCustomer);
+        await  _unitOfWork.CompleteAsync();
 
         CustomerResultDto? objAddedCustomer = await GetCustomerById(objNewCustomer.Id);
 
@@ -34,7 +34,7 @@ public class CustomerService : ICustomerService
 
     public async Task<CustomerResultDto?> GetCustomerById(long id)
     {
-        return await _customerRepository.GetFirstOrDefaultAsync<CustomerResultDto>(
+        return await _unitOfWork.Customers.GetFirstOrDefaultAsync<CustomerResultDto>(
             c => c.Id == id,
             _mapper.ConfigurationProvider
         );

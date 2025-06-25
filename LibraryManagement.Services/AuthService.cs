@@ -17,19 +17,18 @@ namespace LibraryManagement.Services;
 
 public class AuthService : IAuthService
 {
-
-    private readonly IUserRepository _userRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IConfiguration _configuration;
     private readonly IMapper _mapper;
-    public AuthService(IUserRepository userRepository, IConfiguration configuration, IMapper mapper) {
-        _userRepository = userRepository;
+    public AuthService(IUnitOfWork unitOfWork, IConfiguration configuration, IMapper mapper) {
+        _unitOfWork = unitOfWork;
         _configuration = configuration;
         _mapper = mapper;
     }
 
     public async Task<Response<RegistrationResultDto?>> RegisterUser(RegisterDto objRegisterDto)
     {
-        bool bIsExist = await _userRepository.ExistAsync(u => u.Email == objRegisterDto.Email);
+        bool bIsExist = await _unitOfWork.Users.ExistAsync(u => u.Email == objRegisterDto.Email);
 
         if(bIsExist) {
             return CommonHelper.CreateResponse<RegistrationResultDto?>(null, HttpStatusCode.BadRequest, true, "User with this email already exist.");
@@ -37,10 +36,10 @@ public class AuthService : IAuthService
 
         User objNewUser = _mapper.Map<User>(objRegisterDto);
 
-        await _userRepository.InsertAsync(objNewUser);
-        await _userRepository.SaveChangesAsync();
+        await _unitOfWork.Users.InsertAsync(objNewUser);
+        await  _unitOfWork.CompleteAsync();
 
-        RegistrationResultDto? objAddedUser = await _userRepository.GetFirstOrDefaultAsync<RegistrationResultDto>(
+        RegistrationResultDto? objAddedUser = await _unitOfWork.Users.GetFirstOrDefaultAsync<RegistrationResultDto>(
             u => u.Id == objNewUser.Id,
             _mapper.ConfigurationProvider
         );
@@ -51,7 +50,7 @@ public class AuthService : IAuthService
 
     public async Task<Response<AuthResultDto>> LoginUser(LoginDto objLoginDto)
     {
-        User? objExistingUser = await _userRepository.GetFirstOrDefaultAsync(
+        User? objExistingUser = await _unitOfWork.Users.GetFirstOrDefaultAsync(
             u => u.Email == objLoginDto.Email && 
             u.Password == HashPassword(objLoginDto.Password),
             u => new User {

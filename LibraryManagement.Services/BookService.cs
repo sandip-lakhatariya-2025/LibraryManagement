@@ -3,6 +3,7 @@ using System.Net;
 using AutoMapper;
 using LibraryManagement.Common;
 using LibraryManagement.DataAccess.IRepository;
+using LibraryManagement.DataAccess.Repository.IRepository;
 using LibraryManagement.Models.Dtos.RequestDtos;
 using LibraryManagement.Models.Dtos.ResponseDtos;
 using LibraryManagement.Models.Models;
@@ -14,19 +15,19 @@ namespace LibraryManagement.Services;
 
 public class BookService : IBookService
 {
-    private readonly IBookRepository _bookRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
-    public BookService(IBookRepository bookRepository, IMapper mapper)
+    public BookService(IUnitOfWork unitOfWork, IMapper mapper)
     {
-        _bookRepository = bookRepository;
+        _unitOfWork = unitOfWork;
         _mapper = mapper;
     }
 
     public async Task<PagedResponse<List<ExpandoObject>>> GetPaginatedListOfBooksV1(PaginationFilter paginationFilter, IQueryCollection queryParams, string? sFields)
     {
         List<FilterCriteria> filters = FilterParser.ParseFiltersV1(queryParams);
-        var (lstBooks, nTotalRecords) = await _bookRepository.GetPaginatedListAsyncV1(paginationFilter, filters);
+        var (lstBooks, nTotalRecords) = await _unitOfWork.Books.GetPaginatedListAsyncV1(paginationFilter, filters);
         int nTotalPages = (int)Math.Ceiling((double)nTotalRecords / paginationFilter.PageSize);
 
         var shapedBooks = lstBooks.Select(book => ObjectShaper.GetShapedObject(book, sFields)).ToList();
@@ -46,7 +47,7 @@ public class BookService : IBookService
     public async Task<PagedResponse<List<ExpandoObject>>> GetPaginatedListOfBooksV2(PaginationFilter paginationFilter, string? sFilters, string? sFields)
     {
         List<List<FilterCriteria>> filters = FilterParser.ParseFiltersV2(sFilters);
-        var (lstBooks, nTotalRecords) = await _bookRepository.GetPaginatedListAsyncV2(paginationFilter, filters);
+        var (lstBooks, nTotalRecords) = await _unitOfWork.Books.GetPaginatedListAsyncV2(paginationFilter, filters);
         int nTotalPages = (int)Math.Ceiling((double)nTotalRecords / paginationFilter.PageSize);
 
         var shapedBooks = lstBooks.Select(book => ObjectShaper.GetShapedObject(book, sFields)).ToList();
@@ -65,12 +66,12 @@ public class BookService : IBookService
 
     public async Task<BookResultDto?> GetBookById(long id)
     {
-        return await _bookRepository.GetFirstOrDefaultAsync<BookResultDto>(b => b.Id == id, _mapper.ConfigurationProvider);
+        return await _unitOfWork.Books.GetFirstOrDefaultAsync<BookResultDto>(b => b.Id == id, _mapper.ConfigurationProvider);
     }
 
     public async Task<Response<ExpandoObject>> GetBookByIdV2(long id, string? sFields)
     {
-        BookResultDto? objBookDto = await _bookRepository.GetFirstOrDefaultAsync<BookResultDto>(b => b.Id == id, _mapper.ConfigurationProvider);
+        BookResultDto? objBookDto = await _unitOfWork.Books.GetFirstOrDefaultAsync<BookResultDto>(b => b.Id == id, _mapper.ConfigurationProvider);
 
         if(objBookDto == null) {
             return CommonHelper.CreateResponse(new ExpandoObject(), HttpStatusCode.NotFound, false, ResponseMessages.NotFound.With("Book"));
@@ -85,8 +86,8 @@ public class BookService : IBookService
     {
         Book objNewBook = _mapper.Map<Book>(objBookCreateDto);
 
-        await _bookRepository.InsertAsync(objNewBook);
-        await _bookRepository.SaveChangesAsync();
+        await _unitOfWork.Books.InsertAsync(objNewBook);
+        await  _unitOfWork.CompleteAsync();
 
         BookResultDto? addedBook = await GetBookById(objNewBook.Id);
         return CommonHelper.CreateResponse(addedBook, HttpStatusCode.OK, true, "Book added successfully.");
@@ -94,14 +95,14 @@ public class BookService : IBookService
 
     public async Task<Response<BookResultDto?>> UpdateBook(BookUpdateDto objBookUpdateDto)
     {
-        Book? objExistingBook = await _bookRepository.GetFirstOrDefaultAsync(b => b.Id == objBookUpdateDto.Id);
+        Book? objExistingBook = await _unitOfWork.Books.GetFirstOrDefaultAsync(b => b.Id == objBookUpdateDto.Id);
 
         if (objExistingBook != null)
         {
             _mapper.Map(objBookUpdateDto, objExistingBook);
 
-            _bookRepository.UpdateEntity(objExistingBook);
-            await _bookRepository.SaveChangesAsync();
+            _unitOfWork.Books.UpdateEntity(objExistingBook);
+            await  _unitOfWork.CompleteAsync();
 
             BookResultDto? updatedBook = await GetBookById(objExistingBook.Id);
 
@@ -117,7 +118,7 @@ public class BookService : IBookService
 
         foreach (var objBookUpdateDto in lstBookUpdateDtos)
         {
-            Book? objExistingBook = await _bookRepository.GetFirstOrDefaultAsync(b => b.Id == objBookUpdateDto.Id);
+            Book? objExistingBook = await _unitOfWork.Books.GetFirstOrDefaultAsync(b => b.Id == objBookUpdateDto.Id);
 
             if (objExistingBook != null)
             {
@@ -131,11 +132,11 @@ public class BookService : IBookService
             }
         }
 
-        _bookRepository.UpdateList(listBooks);
-        await _bookRepository.SaveChangesAsync();
+        _unitOfWork.Books.UpdateList(listBooks);
+        await  _unitOfWork.CompleteAsync();
 
         List<long> lstIds = lstBookUpdateDtos.Select(b => b.Id).ToList();
-        List<BookResultDto> updatedBooks = await _bookRepository.GetListAsync<BookResultDto>(
+        List<BookResultDto> updatedBooks = await _unitOfWork.Books.GetListAsync<BookResultDto>(
             b => lstIds.Contains(b.Id),
             _mapper.ConfigurationProvider
         );
@@ -145,12 +146,12 @@ public class BookService : IBookService
 
     public async Task<Response<bool>> DeleteBook(long id)
     {
-        Book? objExistingBook = await _bookRepository.GetFirstOrDefaultAsync(b => b.Id == id);
+        Book? objExistingBook = await _unitOfWork.Books.GetFirstOrDefaultAsync(b => b.Id == id);
 
         if (objExistingBook != null)
         {
-            _bookRepository.DeleteEntity(objExistingBook);
-            await _bookRepository.SaveChangesAsync();
+            _unitOfWork.Books.DeleteEntity(objExistingBook);
+            await  _unitOfWork.CompleteAsync();
 
             return CommonHelper.CreateResponse(false, HttpStatusCode.OK, true, "Book Deleted successfully");
         }
@@ -164,7 +165,7 @@ public class BookService : IBookService
 
         foreach (var id in ids)
         {
-            Book? objExistingBook = await _bookRepository.GetFirstOrDefaultAsync(b => b.Id == id);
+            Book? objExistingBook = await _unitOfWork.Books.GetFirstOrDefaultAsync(b => b.Id == id);
 
             if (objExistingBook != null)
             {
@@ -176,8 +177,8 @@ public class BookService : IBookService
             }
         }
 
-        _bookRepository.DeleteList(listBooks);
-        await _bookRepository.SaveChangesAsync();
+        _unitOfWork.Books.DeleteList(listBooks);
+        await  _unitOfWork.CompleteAsync();
 
         return CommonHelper.CreateResponse(false, HttpStatusCode.OK, true, "All selected Books has been deleted successfully");
     }

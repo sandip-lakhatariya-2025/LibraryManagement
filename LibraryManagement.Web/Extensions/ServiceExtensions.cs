@@ -11,9 +11,7 @@ public static class ServiceExtensions
     public static IServiceCollection RegisterServices(this IServiceCollection services) {
 
         #region repositories
-        services.AddScoped<IBookRepository, BookRepository>();
-        services.AddScoped<ICustomerRepository, CustomerRepository>();
-        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         #endregion
 
