@@ -16,7 +16,7 @@ namespace LibraryManagement.Web.Controller;
 [ApiVersion("1")]
 [ApiVersion("2")]
 [ApiVersion("3")]
-// [Authorize]
+[Authorize]
 public class BookController : ControllerBase
 {
 

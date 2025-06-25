@@ -26,7 +26,7 @@ public class Book
     [Required]
     public long PublisherId { get; set; }
 
-    public DateTime CreatedAt { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public virtual Publisher Publisher { get; set; } = null!;
 
