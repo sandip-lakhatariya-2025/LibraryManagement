@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Text.Json;
+using System.Threading.RateLimiting;
 using Asp.Versioning;
 using Asp.Versioning.ApiExplorer;
 using AutoMapper;
@@ -8,6 +9,7 @@ using LibraryManagement.DataAccess.Data;
 using LibraryManagement.Services;
 using LibraryManagement.Web;
 using LibraryManagement.Web.Extensions;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
@@ -61,6 +63,17 @@ try
             options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
             options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
         });
+    
+    // builder.Services.AddRateLimiter(rateLimiterOptions =>
+    // {
+    //     rateLimiterOptions.AddFixedWindowLimiter("fixed", options =>
+    //     {
+    //         options.PermitLimit = 10;
+    //         options.Window = TimeSpan.FromSeconds(60);
+    //         options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+    //         options.QueueLimit = 0;
+    //     });
+    // });
 
     builder.Services.AddApiVersioning(options => 
     {
@@ -136,8 +149,11 @@ try
     app.UseAuthorization();
 
     app.UseMiddleware<ApiKeyMiddleware>();
+    app.UseMiddleware<RateLimitMiddleware>();
     app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
     app.UseMiddleware<ApiLoggingMiddleware>();
+
+    // app.UseRateLimiter();
 
     app.MapControllers();
     app.Run();

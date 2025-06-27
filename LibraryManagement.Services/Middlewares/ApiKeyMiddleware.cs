@@ -1,5 +1,6 @@
 using LibraryManagement.DataAccess.Data;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Security.Cryptography;
@@ -10,22 +11,15 @@ namespace LibraryManagement.Services;
 public class ApiKeyMiddleware
 {
     private readonly RequestDelegate _next;
-    private readonly string? _storedHashedApiKey;
     private readonly string _salt;
+    private readonly IServiceScopeFactory _scopeFactory;
 
-    public ApiKeyMiddleware(RequestDelegate next, IConfiguration configuration, IServiceProvider serviceProvider)
+    public ApiKeyMiddleware(RequestDelegate next, IConfiguration configuration, IServiceScopeFactory scopeFactory)
     {
         _next = next;
         _salt = configuration["ApiSecurity:ApiKeySalt"]
                 ?? throw new ArgumentException("API key salt not configured.");
-
-        using var scope = serviceProvider.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
-        _storedHashedApiKey = dbContext.Settings
-                                .Where(s => s.SettingName == "API-Key")
-                                .Select(s => s.SettingValue)
-                                .FirstOrDefault();
+        _scopeFactory = scopeFactory;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -39,12 +33,31 @@ public class ApiKeyMiddleware
 
         var hashedInput = HashApiKey(extractedApiKey!);
 
-        if (_storedHashedApiKey == null || !_storedHashedApiKey.Equals(hashedInput))
+        ApiKeyInfo? apiKeyInfo;
+
+        using (var scope = _scopeFactory.CreateScope())
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+            apiKeyInfo = await dbContext.Settings
+                .Where(s => s.SettingName == "API-Key")
+                .Select(s => new ApiKeyInfo
+                {
+                    Key = s.SettingValue,
+                    RequestPerMinute = s.RequestPerMinute
+                })
+                .FirstOrDefaultAsync();
+        }
+
+        if (apiKeyInfo == null || !apiKeyInfo.Key!.Equals(hashedInput))
         {
             context.Response.StatusCode = 401;
             await context.Response.WriteAsync("Unauthorized client.");
             return;
         }
+
+        context.Items["ApiKey"] = apiKeyInfo.Key;
+        context.Items["RateLimitPerMinute"] = apiKeyInfo.RequestPerMinute;
 
         await _next(context);
     }
@@ -55,4 +68,10 @@ public class ApiKeyMiddleware
         var hashBytes = hmac.ComputeHash(Encoding.UTF8.GetBytes(apiKey));
         return Convert.ToBase64String(hashBytes);
     }
+}
+
+internal sealed class ApiKeyInfo 
+{
+    public string? Key { get; set; }
+    public int RequestPerMinute { get; set; }
 }

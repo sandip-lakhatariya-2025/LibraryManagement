@@ -8,6 +8,7 @@ using LibraryManagement.Services;
 using LibraryManagement.Services.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace LibraryManagement.Web.Controller;
 
@@ -17,6 +18,7 @@ namespace LibraryManagement.Web.Controller;
 [ApiVersion("2")]
 [ApiVersion("3")]
 [Authorize]
+// [EnableRateLimiting("fixed")]
 public class BookController : ControllerBase
 {
 
