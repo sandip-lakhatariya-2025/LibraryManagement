@@ -11,10 +11,12 @@ using LibraryManagement.Web;
 using LibraryManagement.Web.Extensions;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Events;
+using StackExchange.Redis;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 var exeFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -63,17 +65,6 @@ try
             options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
             options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
         });
-    
-    // builder.Services.AddRateLimiter(rateLimiterOptions =>
-    // {
-    //     rateLimiterOptions.AddFixedWindowLimiter("fixed", options =>
-    //     {
-    //         options.PermitLimit = 10;
-    //         options.Window = TimeSpan.FromSeconds(60);
-    //         options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-    //         options.QueueLimit = 0;
-    //     });
-    // });
 
     builder.Services.AddApiVersioning(options => 
     {
@@ -90,6 +81,13 @@ try
         options.GroupNameFormat = "'v'V";
         options.SubstituteApiVersionInUrl = true;
     });
+
+    builder.Configuration
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: false)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true)
+    .AddEnvironmentVariables();
+
 
     builder.Services.AddEndpointsApiExplorer();
 
@@ -130,7 +128,7 @@ try
 
     var app = builder.Build();
 
-    if (app.Environment.IsDevelopment())
+    if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
     {
         app.UseSwagger();
         app.UseSwaggerUI(options =>
@@ -152,8 +150,6 @@ try
     app.UseMiddleware<RateLimitMiddleware>();
     app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
     app.UseMiddleware<ApiLoggingMiddleware>();
-
-    // app.UseRateLimiter();
 
     app.MapControllers();
     app.Run();
